@@ -1,0 +1,8 @@
+
+Genome didefinisikan dengan string berukuran 35 digit dengan representasi digit 1-7 adalah row 1, 7-14 adalah row 2, dan seterusnya hingga digit ke
+35 adalah digit pada kolom ke 7 dan row ke 5. (atau mending make matrix, need evaluation on that)
+
+generate a random representation of 
+
+fitness function == (35 - jumlah slot kosong dari) + total revenue maksimum (jika dan hanya jika weight < 100 ton)
+
