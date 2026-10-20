@@ -55,14 +55,14 @@ def check_space(vehicle: dict):
     canplace = False
     for i in range(shipWidth):
         for j in range(shipHeight):
-            if shipMatrix[(i, j)] == 1:
+            if shipMatrix[(i, j)] != 0:
                 continue
             if i + vehicleWidth > shipWidth or j + vehicleHeight > shipHeight:
                 continue
             canplace = True
             for k in range(vehicleWidth):
                 for l in range(vehicleHeight):
-                    if shipMatrix[(i + k, j + l)] == 1:
+                    if shipMatrix[(i + k, j + l)] != 0:
                         canplace = False
                         break
                 if not canplace:
@@ -92,29 +92,24 @@ def calculate_fitness(gen: dict):
     shipCurrWeight = 0
     shippingFee = 0
     spaceUsed = 0
-    numberVehiclePlaced = 0;
+    numberVehiclePlaced = 0
+    gen["vehicles_placed"] = []
     for gene in gen["genome"]:
         if gene == 0:
             continue
         vehicle = vehicles[gene]
         canPlace, positionX, positionY = check_space(vehicle)
         if not canPlace:
-            rotatedVehicle = rotate_vehicle(vehicle)
-            canPlace, positionX, positionY = check_space(rotatedVehicle)
-            if canPlace and shipCurrWeight + rotatedVehicle["weight"] <= shipMaxCapacity:
-                numberVehiclePlaced += 1
-                place_vehicle(rotatedVehicle, positionX, positionY, numberVehiclePlaced)
-                gen["vehicles_placed"].append(f"Vehicle {numberVehiclePlaced}: {vehicle['id']}")
-                shipCurrWeight += rotatedVehicle["weight"]
-                shippingFee += rotatedVehicle["shippingFee"]
-                spaceUsed += rotatedVehicle["dimensions"][0] * rotatedVehicle["dimensions"][1]
-            else:
-                continue
-        else:
-            continue
-    fitness = shippingFee + spaceUsed
-    gen["fitness"] = fitness
-    gen["vehicles_placed"] = numberVehiclePlaced 
+            vehicle = rotate_vehicle(vehicle)
+            canPlace, positionX, positionY = check_space(vehicle)
+        if canPlace and shipCurrWeight + vehicle["weight"] <= shipMaxCapacity:
+            numberVehiclePlaced += 1
+            place_vehicle(vehicle, positionX, positionY, numberVehiclePlaced)
+            gen["vehicles_placed"].append(f"Vehicle {numberVehiclePlaced}: {vehicle['id']}")
+            shipCurrWeight += vehicle["weight"]
+            shippingFee += vehicle["shippingFee"]
+            spaceUsed += vehicle["dimensions"][0] * vehicle["dimensions"][1]
+    gen["fitness"] = shippingFee + spaceUsed
 
 def reset_ship() -> None:
     global shipMatrix
@@ -143,6 +138,9 @@ def main():
     for gen in population:  
         calculate_fitness(gen)
         print(f"Gen: {gen['genome']}, Fitness: {gen['fitness']}")
+        print(f"Vehicles placed: {gen['vehicles_placed']}")
+        print(f"Matriks kapal setelah penempatan kendaraan:")
+        print_matrix(shipMatrix)
         reset_ship()
         sleep(1)
 
