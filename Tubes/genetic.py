@@ -1,5 +1,5 @@
 # genetic.py
-from typing import List, Dict, Union
+from typing import List
 from time import sleep
 import random
 
@@ -91,7 +91,6 @@ def place_vehicle(vehicle: dict, positionX: int, positionY: int, vehicleCode: in
 def calculate_fitness(gen: dict):
     shipCurrWeight = 0
     shippingFee = 0
-    spaceUsed = 0
     numberVehiclePlaced = 0
     gen["vehicles_placed"] = []
     for gene in gen["genome"]:
@@ -108,8 +107,7 @@ def calculate_fitness(gen: dict):
             gen["vehicles_placed"].append(f"Vehicle {numberVehiclePlaced}: {vehicle['id']}")
             shipCurrWeight += vehicle["weight"]
             shippingFee += vehicle["shippingFee"]
-            spaceUsed += vehicle["dimensions"][0] * vehicle["dimensions"][1]
-    gen["fitness"] = shippingFee + spaceUsed
+    gen["fitness"] = shippingFee
 
 def reset_ship() -> None:
     global shipMatrix
