@@ -10,8 +10,6 @@ shipMatrix = {(i, j): 0 for i in range(shipWidth) for j in range(shipHeight)}
 shipMaxCapacity = 100
 
 
-startPopulationNumber = int(input("Masukkan jumlah populasi awal: "))
-generationNumber = int(input("Masukkan jumlah generasi: "))
 
 # Genetic disimpan sebagai dictionary dengan key "genome" dan "fitness"
 # Untuk memudahkan pengelolaan data individu dalam populasi
@@ -34,7 +32,7 @@ vehicles = {
 def generate_genetic(p: population) -> None:
     individual = [random.randint(0, 3) for _ in range(17)] 
     sleep(1)  
-    print(f"Mengasilkan genetik: {individual}")  
+    print(f"Menghasilkan: {individual}")  
     p.append({"genome": individual, "fitness": 0})
 
 # Fungsi generate_population
@@ -114,12 +112,31 @@ def reset_ship() -> None:
     shipMatrix = {(i, j): 0 for i in range(shipWidth) for j in range(shipHeight)}
 
 # Fungsi visualisasi - print_matrix
+# Fungsi visualisasi - print_matrix
 def print_matrix(matrix: dict) -> None:
+    cellWidth = max(2, len(str(max(matrix.values()))))
+    segment = "─" * (cellWidth + 2)
+
+    print("┌" + "┬".join([segment] * shipHeight) + "┐")
     for i in range(shipWidth):
-        for j in range(shipHeight):
-            print(matrix[(i, j)], end=" ")
-        print()
-    pass
+        cells = [f" {str(matrix[(i, j)]).rjust(cellWidth)} " for j in range(shipHeight)]
+        print("│" + "│".join(cells) + "│")
+        if i < shipWidth - 1:
+            print("├" + "┼".join([segment] * shipHeight) + "┤")
+    print("└" + "┴".join([segment] * shipHeight) + "┘")
+
+# Divider
+# biar cakep
+def divider(title: str = "", width: int = 60, char: str = "═") -> None:
+    if title == "":
+        print(char * width)
+        return
+    label = f" {title} "
+    left = (width - len(label)) // 2
+    right = width - len(label) - left
+    print()
+    print(char * left + label + char * right)
+    print()
 
 def calculate_successor(population: population) -> list:
     totalFitness = 0
@@ -160,73 +177,86 @@ def loading(message: str, seconds: float = 1.5) -> None:
 
 # Fungsi main
 def main():
-    loading("Mengasilkan populasi awal sebanyak " + str(startPopulationNumber)+" genetik", 2)
+    divider("GENETIC ALGORITHM")
+    startPopulationNumber = int(input("Masukkan jumlah populasi awal: "))
+    generationNumber = int(input("Masukkan jumlah generasi: "))
+
+    sleep(2)
+    divider("POPULASI AWAL")
+    loading("Menghasilkan populasi awal sebanyak " + str(startPopulationNumber)+" genetik", 2)
     population = generate_population(startPopulationNumber)
 
-    # sleep(2)
+    sleep(2)
+    divider("KONDISI KAPAL AWAL")
     loading(f"Mengecek kondisi awal kapal", 2)
+    sleep(2)
     print(f"Kondisi kapal ukuran {shipHeight} x {shipWidth} dengan kapasitas maksimal {shipMaxCapacity} ton:")
+    sleep(2)
     print_matrix(shipMatrix)
 
-    # sleep(2)
+    sleep(2)
+    divider("FITNESS FUNCTION POPULASI")
     loading("Menghitung fitness function untuk tiap individu pada populasi", 2)
-    # sleep(2)
     for gen in population:  
         calculate_fitness(gen)
         print(f"Genetik: {gen['genome']}, Fitness: {gen['fitness']}")
+        sleep(0.2)
         # print(f"Vehicles placed: {gen['vehicles_placed']}") 
         # print(f"Matriks kapal setelah penempatan kendaraan:")
         # print_matrix(shipMatrix)
         reset_ship()
 
+    divider("ITERASI GENERASI")
     loading("Memulai iterasi untuk " + str(generationNumber) + " generasi", 2)
     for generation in range(generationNumber):
-        # sleep(2)
-
-        print(f"Generation {generation + 1} / {generationNumber}, population size: {len(population)}")  
-        # sleep(2)    
+        divider(f"GENERASI {generation + 1}")          
+        divider("PARENT")  
         loading(f"Memilih dua individu terbaik menjadi parent")      
         successors = calculate_successor(population)
-        # sleep(2)
-        print(f"Parents terpilih: {successors[0]['genome']} and {successors[1]['genome']}")
-        # sleep(2)
+        print(f"PARENT1:{successors[0]['genome']}\nPARENT2:{successors[1]['genome']}")
 
 
+        sleep(2)
+        divider("CROSSOVER")  
+        sleep(2)
         loading("Menjalankan fungsi crossover pada parent", 2)
         children = crossover(successors[0], successors[1])
         for child in children:
             calculate_fitness(child)
         reset_ship()
-        # sleep(2)
-        print(f"Memperoleh 2 children: {children[0]['genome']} and {children[1]['genome']}")
+        print(f"Memperoleh 2 children hasil crossover kedua parent")
+        print(f"CHILD1:{children[0]['genome']}\nCHILD2:{children[1]['genome']}")
         population.extend(children)
-        # sleep(2)
         loading("Menambahkan children ke dalam populasi", 2)
-        # sleep(2)
         print(f"Berhasil menambahkan children ke dalam populasi, total populasi: {len(population)}") 
-        # sleep(2)
 
+        sleep(2)
+        divider("MUTATION")  
+        sleep(2)
         loading(f"Menjalankan fungsi mutate pada children")
         mutatedChildren = [mutate(child, 0.1) for child in children]
-        # sleep(2)
-        print(f"Memperoleh 2 mutated children: {mutatedChildren[0]['genome']} and {mutatedChildren[1]['genome']}")
+        print(f"Memperoleh 2 mutated children hasil mutasi kedua child:")
+        print(f"MUTATED1:{mutatedChildren[0]['genome']}\nMUTATED2:{mutatedChildren[1]['genome']}")
         population.extend(mutatedChildren)
-        # sleep(2)
         loading("Menambahkan mutated children ke dalam populasi", 2)
-        # sleep(2)
         print(f"Berhasil menambahkan mutated ke dalam populasi, total populasi: {len(population)}") 
-        # sleep(2)
 
+    sleep(2)
+    divider("ITERASI SELESAI")
     print(f"Iterasi untuk {generationNumber} generasi selesai, populasi akhir: {len(population)}")
-    # sleep(2)
+    sleep(2)
     loading("Menghitung fitness function untuk tiap individu pada populasi akhir", 2)
     for gen in population:
         calculate_fitness(gen)
         print(f"Genetik: {gen['genome']}, Fitness: {gen['fitness']}")
+        sleep(0.2)
         reset_ship()
 
+    sleep(2)
+    divider("BEST GENETIC")
     best = max(population, key=lambda gen: gen["fitness"])
-    print(f"Fitness function tertinggi pada populasi akhir: {best['fitness']} yaitu individu dengan genetik: {best['genome']}")
+    print(f"Fitness function tertinggi pada populasi akhir: {best['fitness']}")
+    print(f"Diraih oleh individu dengan genetik: {best['genome']}")
 
     calculate_fitness(best)
     print(f"Vehicles placed oleh individu dengan fitness tertinggi: {best['vehicles_placed']}")
