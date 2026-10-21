@@ -4,39 +4,42 @@ from time import sleep, time
 import random
 
 # Pendefinisian variabel awal untuk algoritma 
+# shipWidth, shipHeight dan shipMaxCapacity
 shipWidth = 5
 shipHeight = 7
 shipMatrix = {(i, j): 0 for i in range(shipWidth) for j in range(shipHeight)} 
 shipMaxCapacity = 100
 
+# Populasi adalah list dari genetik [dengan representasi dict]
+population = List[dict]
 
-
-# Genetic disimpan sebagai dictionary dengan key "genome" dan "fitness"
-# Untuk memudahkan pengelolaan data individu dalam populasi
-class Genetic:
-    def __init__(self, genome: List[int]):
-        self.genome = genome
-        self.fitness = 0
-        self.vehicles_placed = []
-
-# Populasi adalah list dari individu genetik dengan jumlah awal sebanyak startPopulationNumber
-population = List[Genetic]
+# Vehicles adalah pendefinisian tipe kendaraan yang ada
+# dibatasi menjadi tiga jenis yaitu Mobil, Minibus, dan Truk
 vehicles = {
     1: {"id": "mobil", "dimensions": (1, 2),"orientation": "horizontal", "shippingFee": 20, "weight": 5, "eta": 2},
     2: {"id": "minibus", "dimensions": (1, 3),"orientation": "horizontal", "shippingFee": 30, "weight": 12, "eta": 2},
     3: {"id": "truk", "dimensions": (2, 3),"orientation": "horizontal","shippingFee": 60, "weight": 30, "eta": 2}
 }
 
+# Pendefinisian stock mobil
+# emptyslots agar genome bisa memiliki digit 0
+# Digit 0 menandakan slot kosong
 emptySlots = 8
 vehicleStock = {1: 20, 2: 7, 3: 5, 0: emptySlots}
+
+# genomeLength adalah jumlah kendaraan terbanyak
+# Terkecil = mobil, maksimum mobil = 17
 genomeLength = 17
 
+# Fungsi generate_genetic
+# Digunakan untuk menghasilkan genetik
 def generate_genetic(p: population) -> None:
     pool = []
+    # Generation memperhatikan jumlah stock kendaraan yang ada
     for code, amount in vehicleStock.items():
         pool += [code] * amount
+    # Mengambil dari pool sebanyak genomeLength
     individual = random.sample(pool, genomeLength)
-    sleep(0.2)
     print(f"Menghasilkan: {individual}")
     p.append({"genome": individual, "fitness": 0})
 
@@ -44,8 +47,10 @@ def generate_genetic(p: population) -> None:
 # Digunakan untuk menghasilkan populasi awal sebanyak startPopulationNumber 
 def generate_population(startPopulationNumber: int) -> population:
     population = []
+    # Memanggil fungsi generate_genetic
     for _ in range(startPopulationNumber):
         generate_genetic(population)
+        sleep(0.2)
     return population
 
 # Fungsi check_space
@@ -56,13 +61,18 @@ def check_space(vehicle: dict):
     positionX = 0;
     positionY = 0;
     canplace = False
+    # Mengecek setiap koordinat i, j pada kapal
     for i in range(shipWidth):
         for j in range(shipHeight):
+            # Jika koordinat terisi, skip
             if shipMatrix[(i, j)] != 0:
                 continue
+            # Jika koordinat mentok (sudah tidak muat kendaraan), skip
             if i + vehicleWidth > shipWidth or j + vehicleHeight > shipHeight:
                 continue
             canplace = True
+            # Jika koordinat kosong, koordinat sekitarnya
+            # juga dicek sesuai size kendaraan yang akan di place
             for k in range(vehicleWidth):
                 for l in range(vehicleHeight):
                     if shipMatrix[(i + k, j + l)] != 0:
@@ -77,13 +87,16 @@ def check_space(vehicle: dict):
     return canplace, positionX, positionY
 
 # Fungsi rotate_vehicle
-# Digunakan untuk merotasi kendaraan dari horizontal ke vertikal atau sebaliknya
+# Digunakan untuk merotasi copy of kendaraan
+# dari horizontal ke vertikal atau sebaliknya
 def rotate_vehicle(vehicle: dict) -> dict:
     rotatedVehicle = vehicle.copy()
     rotatedVehicle["dimensions"] = (vehicle["dimensions"][1], vehicle["dimensions"][0])
     rotatedVehicle["orientation"] = "vertical" if vehicle["orientation"] == "horizontal" else "horizontal"
     return rotatedVehicle
 
+# Fungsi place_vehicle
+# Digunakan untuk menaruh vehicle setelah di check
 def place_vehicle(vehicle: dict, positionX: int, positionY: int, vehicleCode: int) -> None:
     vehicleWidth = vehicle["dimensions"][0]
     vehicleHeight = vehicle["dimensions"][1]
@@ -91,41 +104,56 @@ def place_vehicle(vehicle: dict, positionX: int, positionY: int, vehicleCode: in
         for j in range(vehicleHeight):
             shipMatrix[(positionX + i, positionY + j)] = vehicleCode
 
+# Fungsi calculate_fitness
+# Digunakan untuk menghitung fitness function dari
+# genome pada populasi
 def calculate_fitness(gen: dict):
     shipCurrWeight = 0
     shippingFee = 0
     numberVehiclePlaced = 0
+    placedCount = {1: 0, 2: 0, 3: 0}
     gen["vehicles_placed"] = []
-    gen["vehicles_unplaced"] = []
-    unplacedCount = 0
+    # Mengiterasikan setiap digit dari genome
     for gene in gen["genome"]:
         if gene == 0:
             continue
+        # Jika digit tidak 0, panggil fungsi check_space
         vehicle = vehicles[gene]
         canPlace, positionX, positionY = check_space(vehicle)
+        # Kalau masih belum bisa di place, coba di rotate
         if not canPlace:
             vehicle = rotate_vehicle(vehicle)
             canPlace, positionX, positionY = check_space(vehicle)
+        # Jika bisa dan weight dari ship masih memadai, panggil place_vehicle
         if canPlace and shipCurrWeight + vehicle["weight"] <= shipMaxCapacity:
             numberVehiclePlaced += 1
+            placedCount[gene] += 1
             place_vehicle(vehicle, positionX, positionY, numberVehiclePlaced)
             gen["vehicles_placed"].append((numberVehiclePlaced, vehicle["id"]))
             shipCurrWeight += vehicle["weight"]
             shippingFee += vehicle["shippingFee"]
-        else:
-            unplacedCount += 1
-            gen["vehicles_unplaced"].append((unplacedCount, vehicle["id"]))
+    # Menghitung vehicles yang tidak di place juga
+    # Untuk mengetahui sisa stock kendaraan 
+    gen["vehicles_unplaced"] = []
+    for code in (1, 2, 3):
+        sisa = vehicleStock[code] - placedCount[code]
+        if sisa > 0:
+            gen["vehicles_unplaced"].append((f"{sisa}x", vehicles[code]["id"]))
     gen["fitness"] = shippingFee
 
+# Fungsi reset_ship
+# Digunakan mengosongkan kendaraan pada ship 
 def reset_ship() -> None:
     global shipMatrix
     shipMatrix = {(i, j): 0 for i in range(shipWidth) for j in range(shipHeight)}
 
-# Fungsi visualisasi - print_matrix
+# Fungsi print_matrix (visualisasi)
+# Digunakan untuk memunjukkan kondisi ship
+# dan posisi kendaraan yang ada
 def print_matrix(matrix: dict) -> None:
     cellWidth = max(2, len(str(max(matrix.values()))))
     segment = "─" * (cellWidth + 2)
-
+    # Menggunakan ASCII agar tabel menjadi rapih
     print("┌" + "┬".join([segment] * shipHeight) + "┐")
     for i in range(shipWidth):
         cells = [f" {str(matrix[(i, j)]).rjust(cellWidth)} " for j in range(shipHeight)]
@@ -134,8 +162,9 @@ def print_matrix(matrix: dict) -> None:
             print("├" + "┼".join([segment] * shipHeight) + "┤")
     print("└" + "┴".join([segment] * shipHeight) + "┘")
 
-# Divider
-# biar cakep
+# Fungsi divider (visualisasi)
+# Digunakan untuk membantu memisahkan output
+# dan menjadi judul besar yang jelas
 def divider(title: str = "", width: int = 60, char: str = "═") -> None:
     if title == "":
         print(char * width)
@@ -147,17 +176,17 @@ def divider(title: str = "", width: int = 60, char: str = "═") -> None:
     print(char * left + label + char * right)
     print()
 
-#helper table
-def build_table(title: str, rows: list) -> list:
-    codeW = max([4] + [len(str(c)) for c, _ in rows])
-    typeW = max([4] + [len(t) for _, t in rows])
+# Fungsi build_table (visualisasi)
+# Digunakan untuk membuat tabel
+def build_table(title: str, headers: tuple, rows: list) -> list:
+    codeW = max([len(headers[0])] + [len(str(c)) for c, _ in rows])
+    typeW = max([len(headers[1])] + [len(t) for _, t in rows])
     totalW = codeW + typeW + 7
     border = lambda l, m, r: l + "─" * (codeW + 2) + m + "─" * (typeW + 2) + r
-
     lines = [
         title.center(totalW),
         border("┌", "┬", "┐"),
-        f"│ {'Code'.ljust(codeW)} │ {'Type'.ljust(typeW)} │",
+        f"│ {headers[0].ljust(codeW)} │ {headers[1].ljust(typeW)} │",
         border("├", "┼", "┤"),
     ]
     for c, t in rows:
@@ -167,10 +196,12 @@ def build_table(title: str, rows: list) -> list:
     lines.append(border("└", "┴", "┘"))
     return lines
 
-#helper vehicle table
+# Fungsi print_vehicle_tables
+# Digunakan untuk memprint dua table di akhir
+# Tabel yang menunjukkan kendaraan placed dan unplaced
 def print_vehicle_tables(placed: list, unplaced: list) -> None:
-    left = build_table("PLACED", placed)
-    right = build_table("UNPLACED", unplaced)
+    left = build_table("PLACED", ("Code", "Type"), placed)
+    right = build_table("UNPLACED", ("Jumlah", "Jenis"), unplaced)
     height = max(len(left), len(right))
     while len(left) < height:
         left.append(" " * len(left[0]))
@@ -179,45 +210,50 @@ def print_vehicle_tables(placed: list, unplaced: list) -> None:
     for a, b in zip(left, right):
         print(a + "    " + b)
 
+# Fungsi calculate_successor
+# Digunakan untukencari suksesor dari populasi untuk menjadi parent
 def calculate_successor(population: population) -> list:
     totalFitness = 0
     for gen in population:
         totalFitness += gen["fitness"]
-
+    # chance adalah probabilitas genome terpilih sebagai suksesor
     for gen in population:
         chance = gen["fitness"] / totalFitness if totalFitness > 0 else 0
         gen["chance"] = chance
-
     parent1 = random.choices(population, weights=[gen["chance"] for gen in population], k=1)[0]
-
-    kandidat = [gen for gen in population if gen["genome"] != parent1["genome"]]
-    if len(kandidat) == 0:
+    # mencari kandidat parent 2 yang tidak sama dengan parent 1
+    candidateParent2 = [gen for gen in population if gen["genome"] != parent1["genome"]]
+    if len(candidateParent2) == 0:
         return [parent1, parent1]
-
-    bobot = [gen["chance"] for gen in kandidat]
-    if sum(bobot) == 0:
-        parent2 = random.choice(kandidat)
+    chanceParent2 = [gen["chance"] for gen in candidateParent2]
+    if sum(chanceParent2) == 0:
+        parent2 = random.choice(candidateParent2)
     else:
-        parent2 = random.choices(kandidat, weights=bobot, k=1)[0]
+        parent2 = random.choices(candidateParent2, weights=chanceParent2, k=1)[0]
     return [parent1, parent2]
 
-# build child
-# menghitung anak dengan stock handlingnya juga
+# Fungsi build_child
+# Digunakan untuk mengenerate hasill crossover nanti
+# Generate anak dengan stock handlingnya
 def build_child(first: list, second: list, p: int) -> list:
     genome = first[:p] + second[p:]
-    sisa = vehicleStock.copy()
+    # Mengecek stock dari vehicle dari genome
+    leftovers = vehicleStock.copy()
     for i in range(genomeLength):
         g = genome[i]
-        if sisa[g] > 0:
-            sisa[g] -= 1
+        if leftovers[g] > 0:
+            leftovers[g] -= 1
         else:
-            # stok jenis something habis, ganti dengan jenis yang masih sisa
-            pilihan = [c for c in sisa if sisa[c] > 0]
-            baru = random.choice(pilihan)
-            genome[i] = baru
-            sisa[baru] -= 1
+            # Jika stok jenis suatu habis, maka
+            # ganti dengan jenis yang masih tersisa pada stock
+            leftoverDigit = [c for c in leftovers if leftovers[c] > 0]
+            newDigit = random.choice(leftoverDigit)
+            genome[i] = newDigit
+            leftovers[newDigit] -= 1
     return genome
 
+
+# lanjut ngecomment besok aku MAGER
 def crossover(parentA: dict, parentB: dict):
     p = random.randint(1, genomeLength - 1)
     genomeA = build_child(parentA["genome"], parentB["genome"], p)
@@ -312,6 +348,9 @@ def main():
         divider("MUTATION")  
         loading(f"Menjalankan fungsi mutate pada children")
         mutatedChildren = [mutate(child, 0.1) for child in children]
+        for mutant in mutatedChildren:
+            calculate_fitness(mutant)
+            reset_ship()
         print(f"Memperoleh 2 mutated children hasil mutasi kedua child:")
         print(f"MUTATED1:{mutatedChildren[0]['genome']}\nMUTATED2:{mutatedChildren[1]['genome']}")
         population.extend(mutatedChildren)
