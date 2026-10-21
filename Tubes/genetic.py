@@ -27,12 +27,17 @@ vehicles = {
     3: {"id": "truk", "dimensions": (2, 3),"orientation": "horizontal","shippingFee": 60, "weight": 30, "eta": 2}
 }
 
-# Fungsi generate_genetic
-# Digunakan untuk menghasilkan genetik individu acak 17 digit
+emptySlots = 8
+vehicleStock = {1: 20, 2: 7, 3: 5, 0: emptySlots}
+genomeLength = 17
+
 def generate_genetic(p: population) -> None:
-    individual = [random.randint(0, 3) for _ in range(17)] 
-    sleep(1)  
-    print(f"Menghasilkan: {individual}")  
+    pool = []
+    for code, amount in vehicleStock.items():
+        pool += [code] * amount
+    individual = random.sample(pool, genomeLength)
+    sleep(0.2)
+    print(f"Menghasilkan: {individual}")
     p.append({"genome": individual, "fitness": 0})
 
 # Fungsi generate_population
@@ -91,6 +96,8 @@ def calculate_fitness(gen: dict):
     shippingFee = 0
     numberVehiclePlaced = 0
     gen["vehicles_placed"] = []
+    gen["vehicles_unplaced"] = []
+    unplacedCount = 0
     for gene in gen["genome"]:
         if gene == 0:
             continue
@@ -102,16 +109,18 @@ def calculate_fitness(gen: dict):
         if canPlace and shipCurrWeight + vehicle["weight"] <= shipMaxCapacity:
             numberVehiclePlaced += 1
             place_vehicle(vehicle, positionX, positionY, numberVehiclePlaced)
-            gen["vehicles_placed"].append(f"Vehicle {numberVehiclePlaced}: {vehicle['id']}")
+            gen["vehicles_placed"].append((numberVehiclePlaced, vehicle["id"]))
             shipCurrWeight += vehicle["weight"]
             shippingFee += vehicle["shippingFee"]
+        else:
+            unplacedCount += 1
+            gen["vehicles_unplaced"].append((unplacedCount, vehicle["id"]))
     gen["fitness"] = shippingFee
 
 def reset_ship() -> None:
     global shipMatrix
     shipMatrix = {(i, j): 0 for i in range(shipWidth) for j in range(shipHeight)}
 
-# Fungsi visualisasi - print_matrix
 # Fungsi visualisasi - print_matrix
 def print_matrix(matrix: dict) -> None:
     cellWidth = max(2, len(str(max(matrix.values()))))
@@ -138,6 +147,38 @@ def divider(title: str = "", width: int = 60, char: str = "═") -> None:
     print(char * left + label + char * right)
     print()
 
+#helper table
+def build_table(title: str, rows: list) -> list:
+    codeW = max([4] + [len(str(c)) for c, _ in rows])
+    typeW = max([4] + [len(t) for _, t in rows])
+    totalW = codeW + typeW + 7
+    border = lambda l, m, r: l + "─" * (codeW + 2) + m + "─" * (typeW + 2) + r
+
+    lines = [
+        title.center(totalW),
+        border("┌", "┬", "┐"),
+        f"│ {'Code'.ljust(codeW)} │ {'Type'.ljust(typeW)} │",
+        border("├", "┼", "┤"),
+    ]
+    for c, t in rows:
+        lines.append(f"│ {str(c).rjust(codeW)} │ {t.ljust(typeW)} │")
+    if not rows:
+        lines.append(f"│ {'-'.center(codeW)} │ {'-'.center(typeW)} │")
+    lines.append(border("└", "┴", "┘"))
+    return lines
+
+#helper vehicle table
+def print_vehicle_tables(placed: list, unplaced: list) -> None:
+    left = build_table("PLACED", placed)
+    right = build_table("UNPLACED", unplaced)
+    height = max(len(left), len(right))
+    while len(left) < height:
+        left.append(" " * len(left[0]))
+    while len(right) < height:
+        right.append(" " * len(right[0]))
+    for a, b in zip(left, right):
+        print(a + "    " + b)
+
 def calculate_successor(population: population) -> list:
     totalFitness = 0
     for gen in population:
@@ -147,21 +188,59 @@ def calculate_successor(population: population) -> list:
         chance = gen["fitness"] / totalFitness if totalFitness > 0 else 0
         gen["chance"] = chance
 
+    parent1 = random.choices(population, weights=[gen["chance"] for gen in population], k=1)[0]
 
-    successors = random.choices(population, weights=[gen["chance"] for gen in population], k=2)
-    return successors
+    kandidat = [gen for gen in population if gen["genome"] != parent1["genome"]]
+    if len(kandidat) == 0:
+        return [parent1, parent1]
+
+    bobot = [gen["chance"] for gen in kandidat]
+    if sum(bobot) == 0:
+        parent2 = random.choice(kandidat)
+    else:
+        parent2 = random.choices(kandidat, weights=bobot, k=1)[0]
+    return [parent1, parent2]
+
+# build child
+# menghitung anak dengan stock handlingnya juga
+def build_child(first: list, second: list, p: int) -> list:
+    genome = first[:p] + second[p:]
+    sisa = vehicleStock.copy()
+    for i in range(genomeLength):
+        g = genome[i]
+        if sisa[g] > 0:
+            sisa[g] -= 1
+        else:
+            # stok jenis something habis, ganti dengan jenis yang masih sisa
+            pilihan = [c for c in sisa if sisa[c] > 0]
+            baru = random.choice(pilihan)
+            genome[i] = baru
+            sisa[baru] -= 1
+    return genome
 
 def crossover(parentA: dict, parentB: dict):
-    p = random.randint(1, 16)
-    genomeA = parentA["genome"][:p] + parentB["genome"][p:]
-    genomeB = parentB["genome"][:p] + parentA["genome"][p:]
+    p = random.randint(1, genomeLength - 1)
+    genomeA = build_child(parentA["genome"], parentB["genome"], p)
+    genomeB = build_child(parentB["genome"], parentA["genome"], p)
     return {"genome": genomeA, "fitness": 0}, {"genome": genomeB, "fitness": 0}
 
 def mutate(child: dict, rate: float) -> dict:
-    genome = child["genome"].copy()          
-    for i in range(len(genome)):
+    genome = child["genome"].copy()
+    sisa = vehicleStock.copy()
+    for g in genome:
+        sisa[g] -= 1
+
+    for i in range(genomeLength):
         if random.random() < rate:
-            genome[i] = random.randint(0, 3)
+            if random.random() < 0.5:
+                j = random.randint(0, genomeLength - 1)
+                genome[i], genome[j] = genome[j], genome[i]
+            else:
+                baru = random.randint(0, 3)
+                if sisa[baru] > 0:
+                    sisa[genome[i]] += 1
+                    sisa[baru] -= 1
+                    genome[i] = baru
     return {"genome": genome, "fitness": 0}
 
 
@@ -181,22 +260,20 @@ def main():
     startPopulationNumber = int(input("Masukkan jumlah populasi awal: "))
     generationNumber = int(input("Masukkan jumlah generasi: "))
 
-    sleep(2)
+    sleep(1)
     divider("POPULASI AWAL")
-    loading("Menghasilkan populasi awal sebanyak " + str(startPopulationNumber)+" genetik", 2)
+    loading("Menghasilkan populasi awal sebanyak " + str(startPopulationNumber)+" genetik", 1)
     population = generate_population(startPopulationNumber)
 
-    sleep(2)
+    sleep(1)
     divider("KONDISI KAPAL AWAL")
-    loading(f"Mengecek kondisi awal kapal", 2)
-    sleep(2)
+    loading(f"Mengecek kondisi awal kapal", 1)
     print(f"Kondisi kapal ukuran {shipHeight} x {shipWidth} dengan kapasitas maksimal {shipMaxCapacity} ton:")
-    sleep(2)
     print_matrix(shipMatrix)
 
-    sleep(2)
+    sleep(1)
     divider("FITNESS FUNCTION POPULASI")
-    loading("Menghitung fitness function untuk tiap individu pada populasi", 2)
+    loading("Menghitung fitness function untuk tiap individu pada populasi", 1)
     for gen in population:  
         calculate_fitness(gen)
         print(f"Genetik: {gen['genome']}, Fitness: {gen['fitness']}")
@@ -206,60 +283,59 @@ def main():
         # print_matrix(shipMatrix)
         reset_ship()
 
+    sleep(1)
     divider("ITERASI GENERASI")
-    loading("Memulai iterasi untuk " + str(generationNumber) + " generasi", 2)
+    loading("Memulai iterasi untuk " + str(generationNumber) + " generasi", 1)
     for generation in range(generationNumber):
+        sleep(1)
         divider(f"GENERASI {generation + 1}")          
+        sleep(1)
         divider("PARENT")  
         loading(f"Memilih dua individu terbaik menjadi parent")      
         successors = calculate_successor(population)
         print(f"PARENT1:{successors[0]['genome']}\nPARENT2:{successors[1]['genome']}")
 
-
-        sleep(2)
+        sleep(1)
         divider("CROSSOVER")  
-        sleep(2)
-        loading("Menjalankan fungsi crossover pada parent", 2)
+        loading("Menjalankan fungsi crossover pada parent", 1)
         children = crossover(successors[0], successors[1])
         for child in children:
             calculate_fitness(child)
-        reset_ship()
+            reset_ship()
         print(f"Memperoleh 2 children hasil crossover kedua parent")
         print(f"CHILD1:{children[0]['genome']}\nCHILD2:{children[1]['genome']}")
         population.extend(children)
-        loading("Menambahkan children ke dalam populasi", 2)
+        loading("Menambahkan children ke dalam populasi", 1)
         print(f"Berhasil menambahkan children ke dalam populasi, total populasi: {len(population)}") 
 
-        sleep(2)
+        sleep(1)
         divider("MUTATION")  
-        sleep(2)
         loading(f"Menjalankan fungsi mutate pada children")
         mutatedChildren = [mutate(child, 0.1) for child in children]
         print(f"Memperoleh 2 mutated children hasil mutasi kedua child:")
         print(f"MUTATED1:{mutatedChildren[0]['genome']}\nMUTATED2:{mutatedChildren[1]['genome']}")
         population.extend(mutatedChildren)
-        loading("Menambahkan mutated children ke dalam populasi", 2)
+        loading("Menambahkan mutated children ke dalam populasi", 1)
         print(f"Berhasil menambahkan mutated ke dalam populasi, total populasi: {len(population)}") 
 
-    sleep(2)
+    sleep(1)
     divider("ITERASI SELESAI")
     print(f"Iterasi untuk {generationNumber} generasi selesai, populasi akhir: {len(population)}")
-    sleep(2)
-    loading("Menghitung fitness function untuk tiap individu pada populasi akhir", 2)
+    loading("Menghitung fitness function untuk tiap individu pada populasi akhir", 1)
     for gen in population:
         calculate_fitness(gen)
         print(f"Genetik: {gen['genome']}, Fitness: {gen['fitness']}")
         sleep(0.2)
         reset_ship()
 
-    sleep(2)
+    sleep(1)
     divider("BEST GENETIC")
     best = max(population, key=lambda gen: gen["fitness"])
     print(f"Fitness function tertinggi pada populasi akhir: {best['fitness']}")
     print(f"Diraih oleh individu dengan genetik: {best['genome']}")
-
+    
     calculate_fitness(best)
-    print(f"Vehicles placed oleh individu dengan fitness tertinggi: {best['vehicles_placed']}")
+    print_vehicle_tables(best["vehicles_placed"], best["vehicles_unplaced"])
     print(f"Matriks kapal setelah penempatan kendaraan:")
     print_matrix(shipMatrix)
     reset_ship()
