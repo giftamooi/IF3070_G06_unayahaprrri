@@ -121,6 +121,31 @@ def print_matrix(matrix: dict) -> None:
         print()
     pass
 
+def calculate_successor(population: population) -> list:
+    totalFitness = 0
+    for gen in population:
+        totalFitness += gen["fitness"]
+
+    for gen in population:
+        chance = gen["fitness"] / totalFitness if totalFitness > 0 else 0
+        gen["chance"] = chance
+
+
+    successors = random.choices(population, weights=[gen["chance"] for gen in population], k=2)
+    return successors
+
+def crossover(parentA: dict, parentB: dict):
+    p = random.randint(1, 16)
+    genomeA = parentA["genome"][:p] + parentB["genome"][p:]
+    genomeB = parentB["genome"][:p] + parentA["genome"][p:]
+    return {"genome": genomeA, "fitness": 0}, {"genome": genomeB, "fitness": 0}
+
+def mutate(child: dict, rate: float) -> dict:
+    genome = child["genome"].copy()          
+    for i in range(len(genome)):
+        if random.random() < rate:
+            genome[i] = random.randint(0, 3)
+    return {"genome": genome, "fitness": 0}
 
 # Fungsi main
 def main():
@@ -141,6 +166,29 @@ def main():
         print_matrix(shipMatrix)
         reset_ship()
         sleep(1)
+
+        for generation in range(generationNumber):
+            print(f"Generation {generation + 1} / {generationNumber}, population size: {len(population)}")            
+            successors = calculate_successor(population)
+            print(f"Selected parents: {successors[0]['genome']} and {successors[1]['genome']}")
+            print(f"Crossing over parents to produce children...")
+            
+            children = crossover(successors[0], successors[1])
+            for child in children:
+                calculate_fitness(child)
+            reset_ship()
+
+            print(f"Children produced: {children[0]['genome']} and {children[1]['genome']}")
+            population.extend(children)
+            print(f"Inserted children into population, current population: {len(population)}") 
+
+            print(f"Mutating children...")
+            mutatedChildren = [mutate(child, 0.1) for child in children]
+            print(f"Mutated children: {mutatedChildren[0]['genome']} and {mutatedChildren[1]['genome']}")
+            population.extend(mutatedChildren)
+            print(f"Inserted mutated children into population, current population: {len(population)}") 
+
+    
 
 if __name__ == "__main__":
     main()
