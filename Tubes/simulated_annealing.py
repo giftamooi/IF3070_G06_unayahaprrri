@@ -1,14 +1,8 @@
 # simulated_annealing.py
 from typing import List
 from time import sleep, time
-import json
 import math
-import os
 import random
-import textwrap
-
-import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
 
 # Pendefinisian variabel awal untuk algoritma (sama dengan genetic.py)
 # shipWidth = banyak baris (i), shipHeight = banyak kolom (j)
@@ -16,7 +10,7 @@ shipWidth = 5
 shipHeight = 7
 shipMaxCapacity = 100
 
-# Jenis kendaraan, format sama dengan genetic.py
+# Vehicles adalah pendefinisian tipe kendaraan yang ada (format sama dengan genetic.py)
 # dimensions = (baris, kolom) untuk orientasi horizontal, vertikal = ditukar
 vehicles = {
     1: {"id": "mobil", "dimensions": (1, 2),"orientation": "horizontal", "shippingFee": 20, "weight": 5, "eta": 2},
@@ -24,7 +18,7 @@ vehicles = {
     3: {"id": "truk", "dimensions": (2, 3),"orientation": "horizontal","shippingFee": 70, "weight": 30, "eta": 2}
 }
 
-# Jumlah unit tiap jenis kendaraan (total 32 kendaraan)
+# Pendefinisian stock kendaraan (total 32 kendaraan)
 vehicleStock = {1: 20, 2: 7, 3: 5}
 
 # State adalah list berisi seluruh 32 kendaraan
@@ -32,19 +26,13 @@ vehicleStock = {1: 20, 2: 7, 3: 5}
 # atau None jika kendaraan berada di luar kapal
 shipState = List[dict]
 
-# Folder penyimpanan hasil run (output/simulated_annealing di root repo)
-outputDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "output", "simulated_annealing")
-
-# Warna tiap jenis kendaraan pada visualisasi
-typeColors = {1: "tab:blue", 2: "tab:orange", 3: "tab:green"}
-
 
 # Fungsi generate_fleet
 # Digunakan untuk membuat 32 kendaraan dengan id unik, semuanya mula-mula di luar kapal
 def generate_fleet() -> shipState:
     fleet = []
-    for vehicleCode, stock in vehicleStock.items():
-        for k in range(stock):
+    for vehicleCode in (1, 2, 3):
+        for k in range(vehicleStock[vehicleCode]):
             vehicle = vehicles[vehicleCode].copy()
             vehicle["vehicleNo"] = len(fleet) + 1
             vehicle["id"] = f"{vehicles[vehicleCode]['id']}-{k + 1}"
@@ -53,8 +41,9 @@ def generate_fleet() -> shipState:
             fleet.append(vehicle)
     return fleet
 
-# Fungsi rotate_vehicle (sama dengan genetic.py)
-# Digunakan untuk merotasi kendaraan dari horizontal ke vertikal atau sebaliknya
+# Fungsi rotate_vehicle
+# Digunakan untuk merotasi copy of kendaraan
+# dari horizontal ke vertikal atau sebaliknya
 def rotate_vehicle(vehicle: dict) -> dict:
     rotatedVehicle = vehicle.copy()
     rotatedVehicle["dimensions"] = (vehicle["dimensions"][1], vehicle["dimensions"][0])
@@ -234,11 +223,13 @@ def simulated_annealing(initialTemperature: float, coolingRate: float, minTemper
         "probabilityHistory": probabilityHistory
     }
 
-# Fungsi visualisasi - print_matrix (sama dengan genetic.py)
+# Fungsi print_matrix (visualisasi)
+# Digunakan untuk memunjukkan kondisi ship
+# dan posisi kendaraan yang ada
 def print_matrix(matrix: dict) -> None:
     cellWidth = max(2, len(str(max(matrix.values()))))
     segment = "─" * (cellWidth + 2)
-
+    # Menggunakan ASCII agar tabel menjadi rapih
     print("┌" + "┬".join([segment] * shipHeight) + "┐")
     for i in range(shipWidth):
         cells = [f" {str(matrix[(i, j)]).rjust(cellWidth)} " for j in range(shipHeight)]
@@ -247,99 +238,9 @@ def print_matrix(matrix: dict) -> None:
             print("├" + "┼".join([segment] * shipHeight) + "┤")
     print("└" + "┴".join([segment] * shipHeight) + "┘")
 
-# Fungsi visualisasi - print_state
-# Menampilkan geladak, daftar kendaraan di dalam & di luar kapal, serta value state di terminal
-def print_state(currentState: shipState) -> None:
-    print_matrix(build_ship_matrix(currentState))
-    print("Kendaraan di dalam kapal:")
-    for vehicle in currentState:
-        if vehicle["position"] is not None:
-            print(f"  [{vehicle['vehicleNo']:>2}] {vehicle['id']:<10} {vehicle['orientation']:<10} posisi {vehicle['position']}")
-    outsideVehicles = [f"[{vehicle['vehicleNo']}] {vehicle['id']}" for vehicle in currentState if vehicle["position"] is None]
-    print("Kendaraan di luar kapal:")
-    print(textwrap.fill(", ".join(outsideVehicles), width=80, initial_indent="  ", subsequent_indent="  "))
-    print(f"Value: {calculate_value(currentState)} juta, total berat: {calculate_weight(currentState)}/{shipMaxCapacity} ton")
-
-# Fungsi visualisasi - plot_state
-# Menyimpan gambar geladak (kiri) dan daftar kendaraan di luar kapal (kanan) beserta value state
-def plot_state(currentState: shipState, title: str, filePath: str):
-    fig, (axShip, axOutside) = plt.subplots(1, 2, figsize=(12, 5), gridspec_kw={"width_ratios": [3, 2]})
-
-    axShip.set_xlim(0, shipHeight)
-    axShip.set_ylim(shipWidth, 0)
-    axShip.set_xticks(range(shipHeight + 1))
-    axShip.set_yticks(range(shipWidth + 1))
-    axShip.set_aspect("equal")
-    axShip.grid(True)
-    for vehicle in currentState:
-        if vehicle["position"] is None:
-            continue
-        positionX, positionY = vehicle["position"]
-        axShip.add_patch(Rectangle((positionY, positionX), vehicle["dimensions"][1], vehicle["dimensions"][0],
-                                   facecolor=typeColors[vehicle["type"]], edgecolor="black", alpha=0.7))
-        axShip.text(positionY + vehicle["dimensions"][1] / 2, positionX + vehicle["dimensions"][0] / 2,
-                    vehicle["vehicleNo"], ha="center", va="center")
-    axShip.set_title("Geladak kapal (angka = vehicleNo)")
-
-    outsideText = ""
-    for vehicleCode, vehicleType in vehicles.items():
-        outsideNo = [str(vehicle["vehicleNo"]) for vehicle in currentState if vehicle["type"] == vehicleCode and vehicle["position"] is None]
-        outsideText += textwrap.fill(f"{vehicleType['id']} ({len(outsideNo)}): " + ", ".join(outsideNo), width=40) + "\n\n"
-    axOutside.axis("off")
-    axOutside.set_title("Kendaraan di luar kapal")
-    axOutside.text(0, 1, outsideText, va="top", fontsize=9)
-
-    fig.suptitle(f"{title} | Value = {calculate_value(currentState)} juta | Berat = {calculate_weight(currentState)}/{shipMaxCapacity} ton")
-    fig.savefig(filePath)
-    return fig
-
-# Fungsi visualisasi - plot_value
-# Menyimpan plot value current state terhadap iterasi
-def plot_value(valueHistory: list, title: str, filePath: str):
-    fig, ax = plt.subplots(figsize=(10, 4))
-    ax.plot(range(len(valueHistory)), valueHistory)
-    ax.set_xlabel("Iterasi")
-    ax.set_ylabel("Value (juta rupiah)")
-    ax.set_title(title)
-    fig.savefig(filePath)
-    return fig
-
-# Fungsi visualisasi - plot_probability
-# Menyimpan plot e^(deltaE/T) terhadap iterasi (hanya iterasi dengan deltaE < 0)
-def plot_probability(probabilityHistory: list, title: str, filePath: str):
-    fig, ax = plt.subplots(figsize=(10, 4))
-    ax.scatter([t for t, _ in probabilityHistory], [p for _, p in probabilityHistory], s=4)
-    ax.set_xlabel("Iterasi")
-    ax.set_ylabel("e^(ΔE/T)")
-    ax.set_title(title)
-    fig.savefig(filePath)
-    return fig
-
-# Fungsi save_result
-# Menyimpan state awal, state akhir, value, durasi, dan frekuensi stuck satu run ke file JSON
-def save_result(result: dict, parameters: dict, filePath: str) -> None:
-    stateKeys = ["vehicleNo", "id", "orientation", "dimensions", "position", "shippingFee", "weight", "eta"]
-    data = {
-        "parameters": parameters,
-        "initialValue": result["initialValue"],
-        "finalValue": result["finalValue"],
-        "iteration": result["iteration"],
-        "duration": result["duration"],
-        "stuckCount": result["stuckCount"],
-        "initialState": [{key: vehicle[key] for key in stateKeys} for vehicle in result["initialState"]],
-        "finalState": [{key: vehicle[key] for key in stateKeys} for vehicle in result["finalState"]]
-    }
-    with open(filePath, "w") as file:
-        json.dump(data, file, indent=2)
-
-# Fungsi input_parameter
-# Digunakan untuk membaca parameter dari user, memakai nilai default jika input kosong
-def input_parameter(message: str, default, cast):
-    userInput = input(f"{message} (default {default}): ").strip()
-    return cast(userInput) if userInput else default
-
-# Divider (sama dengan genetic.py)
-# biar cakep
+# Fungsi divider (visualisasi)
+# Digunakan untuk membantu memisahkan output
+# dan menjadi judul besar yang jelas
 def divider(title: str = "", width: int = 60, char: str = "═") -> None:
     if title == "":
         print(char * width)
@@ -351,7 +252,88 @@ def divider(title: str = "", width: int = 60, char: str = "═") -> None:
     print(char * left + label + char * right)
     print()
 
-# Loading (sama dengan genetic.py)
+# Fungsi build_table (visualisasi)
+# Digunakan untuk membuat tabel
+def build_table(title: str, headers: tuple, rows: list) -> list:
+    codeW = max([len(headers[0])] + [len(str(c)) for c, _ in rows])
+    typeW = max([len(headers[1])] + [len(t) for _, t in rows])
+    totalW = codeW + typeW + 7
+    border = lambda l, m, r: l + "─" * (codeW + 2) + m + "─" * (typeW + 2) + r
+    lines = [
+        title.center(totalW),
+        border("┌", "┬", "┐"),
+        f"│ {headers[0].ljust(codeW)} │ {headers[1].ljust(typeW)} │",
+        border("├", "┼", "┤"),
+    ]
+    for c, t in rows:
+        lines.append(f"│ {str(c).rjust(codeW)} │ {t.ljust(typeW)} │")
+    if not rows:
+        lines.append(f"│ {'-'.center(codeW)} │ {'-'.center(typeW)} │")
+    lines.append(border("└", "┴", "┘"))
+    return lines
+
+# Fungsi print_vehicle_tables
+# Digunakan untuk memprint dua table di akhir
+# Tabel yang menunjukkan kendaraan placed dan unplaced
+def print_vehicle_tables(placed: list, unplaced: list) -> None:
+    left = build_table("PLACED", ("Code", "Type"), placed)
+    right = build_table("UNPLACED", ("Jumlah", "Jenis"), unplaced)
+    height = max(len(left), len(right))
+    while len(left) < height:
+        left.append(" " * len(left[0]))
+    while len(right) < height:
+        right.append(" " * len(right[0]))
+    for a, b in zip(left, right):
+        print(a + "    " + b)
+
+# Fungsi print_state (visualisasi)
+# Digunakan untuk menampilkan kendaraan di dalam & di luar kapal, matriks geladak, dan value state
+def print_state(currentState: shipState) -> None:
+    placed = [(vehicle["vehicleNo"], f"{vehicle['id']} ({vehicle['orientation']})") for vehicle in currentState if vehicle["position"] is not None]
+    unplaced = []
+    for vehicleCode in (1, 2, 3):
+        sisa = sum(1 for vehicle in currentState if vehicle["type"] == vehicleCode and vehicle["position"] is None)
+        if sisa > 0:
+            unplaced.append((f"{sisa}x", vehicles[vehicleCode]["id"]))
+    print_vehicle_tables(placed, unplaced)
+    print(f"Matriks kapal (angka = Code kendaraan):")
+    print_matrix(build_ship_matrix(currentState))
+    print(f"Value: {calculate_value(currentState)} juta, total berat: {calculate_weight(currentState)}/{shipMaxCapacity} ton")
+
+# Fungsi print_ascii_plot (visualisasi)
+# Digunakan untuk menggambar plot titik (iterasi, nilai) di CLI
+# Iterasi dikelompokkan menjadi plotWidth kolom dan nilai dibagi menjadi plotHeight baris
+def print_ascii_plot(points: list, title: str, plotWidth: int = 60, plotHeight: int = 12) -> None:
+    print(title)
+    if not points:
+        print("(tidak ada data)")
+        return
+    maxX = max(x for x, _ in points)
+    minY = min(y for _, y in points)
+    maxY = max(y for _, y in points)
+    rangeY = maxY - minY if maxY > minY else 1
+    grid = [[" "] * plotWidth for _ in range(plotHeight)]
+    for x, y in points:
+        column = min(plotWidth - 1, x * plotWidth // (maxX + 1))
+        row = plotHeight - 1 - round((y - minY) / rangeY * (plotHeight - 1))
+        grid[row][column] = "*"
+    topLabel = f"{maxY:.4g}"
+    bottomLabel = f"{minY:.4g}"
+    labelW = max(len(topLabel), len(bottomLabel))
+    for row in range(plotHeight):
+        label = topLabel if row == 0 else bottomLabel if row == plotHeight - 1 else ""
+        print(f"{label.rjust(labelW)} │" + "".join(grid[row]))
+    print(" " * labelW + " └" + "─" * plotWidth)
+    print(" " * labelW + "  0" + str(maxX).rjust(plotWidth - 1))
+    print(" " * labelW + "  " + "Iterasi".center(plotWidth))
+
+# Fungsi input_parameter
+# Digunakan untuk membaca parameter dari user, memakai nilai default jika input kosong
+def input_parameter(message: str, default, cast):
+    userInput = input(f"{message} (default {default}): ").strip()
+    return cast(userInput) if userInput else default
+
+# Fungsi loading (visualisasi)
 def loading(message: str, seconds: float = 1.5) -> None:
     frames = ["   ", ".  ", ".. ", "..."]
     endTime = time() + seconds
@@ -363,7 +345,7 @@ def loading(message: str, seconds: float = 1.5) -> None:
     print(f"\r{message}...")
 
 # Fungsi main
-# Menjalankan SA sebanyak 3 kali dengan parameter yang sama, lalu menyimpan hasil tiap run ke output/
+# Menjalankan SA sebanyak 3 kali dengan parameter yang sama dan menampilkan hasil tiap run di CLI
 def main():
     divider("SIMULATED ANNEALING")
     initialTemperature = input_parameter("Masukkan suhu awal", 100.0, float)
@@ -371,47 +353,39 @@ def main():
     minTemperature = input_parameter("Masukkan suhu minimum", 0.01, float)
     maxIteration = input_parameter("Masukkan batas iterasi", 20000, int)
     stuckThreshold = input_parameter("Masukkan batas iterasi tanpa perbaikan (stuck)", 200, int)
-    showPlot = input("Tampilkan plot setiap run? (y/n): ").strip().lower() == "y"
-    parameters = {
-        "initialTemperature": initialTemperature,
-        "coolingRate": coolingRate,
-        "minTemperature": minTemperature,
-        "maxIteration": maxIteration,
-        "stuckThreshold": stuckThreshold
-    }
 
     results = []
     for run in range(1, 4):
+        sleep(1)
         divider(f"RUN {run}")
         loading(f"Menjalankan simulated annealing run ke-{run}", 1)
         result = simulated_annealing(initialTemperature, coolingRate, minTemperature, maxIteration, stuckThreshold)
         results.append(result)
 
+        sleep(1)
         divider("INITIAL STATE")
         print_state(result["initialState"])
 
+        sleep(1)
         divider("FINAL STATE")
         print_state(result["finalState"])
 
+        sleep(1)
+        divider("PLOT VALUE")
+        print_ascii_plot(list(enumerate(result["valueHistory"])), "Value (juta rupiah) terhadap iterasi")
+
+        sleep(1)
+        divider("PLOT e^(ΔE/T)")
+        print_ascii_plot(result["probabilityHistory"], "e^(ΔE/T) terhadap iterasi (hanya saat ΔE < 0)")
+
+        sleep(1)
         divider("HASIL")
         print(f"Value akhir           : {result['finalValue']} juta")
         print(f"Banyak iterasi        : {result['iteration']}")
         print(f"Durasi pencarian      : {result['duration']:.4f} detik")
         print(f"Frekuensi stuck       : {result['stuckCount']} kali (tanpa perbaikan {stuckThreshold} iterasi)")
 
-        runDir = os.path.join(outputDir, f"run_{run}")
-        os.makedirs(runDir, exist_ok=True)
-        plot_state(result["initialState"], f"Run {run} - Initial State", os.path.join(runDir, "initial_state.png"))
-        plot_state(result["finalState"], f"Run {run} - Final State", os.path.join(runDir, "final_state.png"))
-        plot_value(result["valueHistory"], f"Run {run} - Value terhadap Iterasi", os.path.join(runDir, "value_plot.png"))
-        plot_probability(result["probabilityHistory"], f"Run {run} - e^(ΔE/T) terhadap Iterasi", os.path.join(runDir, "probability_plot.png"))
-        save_result(result, parameters, os.path.join(runDir, "result.json"))
-        print(f"Hasil run disimpan di {os.path.normpath(runDir)}")
-
-        if showPlot:
-            plt.show()
-        plt.close("all")
-
+    sleep(1)
     divider("RINGKASAN 3 RUN")
     print(f"{'Run':<5}{'Value awal':<13}{'Value akhir':<13}{'Iterasi':<10}{'Durasi (s)':<13}{'Stuck':<6}")
     for run, result in enumerate(results, start=1):
