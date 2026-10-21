@@ -161,32 +161,32 @@ def main():
     for gen in population:  
         calculate_fitness(gen)
         print(f"Gen: {gen['genome']}, Fitness: {gen['fitness']}")
-        print(f"Vehicles placed: {gen['vehicles_placed']}")
-        print(f"Matriks kapal setelah penempatan kendaraan:")
-        print_matrix(shipMatrix)
+        # print(f"Vehicles placed: {gen['vehicles_placed']}") 
+        # print(f"Matriks kapal setelah penempatan kendaraan:")
+        # print_matrix(shipMatrix)
         reset_ship()
         sleep(1)
 
-        for generation in range(generationNumber):
-            print(f"Generation {generation + 1} / {generationNumber}, population size: {len(population)}")            
-            successors = calculate_successor(population)
-            print(f"Selected parents: {successors[0]['genome']} and {successors[1]['genome']}")
-            print(f"Crossing over parents to produce children...")
+    for generation in range(generationNumber):
+        print(f"Generation {generation + 1} / {generationNumber}, population size: {len(population)}")            
+        successors = calculate_successor(population)
+        print(f"Selected parents: {successors[0]['genome']} and {successors[1]['genome']}")
+        print(f"Crossing over parents to produce children...")
             
-            children = crossover(successors[0], successors[1])
-            for child in children:
-                calculate_fitness(child)
-            reset_ship()
+        children = crossover(successors[0], successors[1])
+        for child in children:
+            calculate_fitness(child)
+        reset_ship()
 
-            print(f"Children produced: {children[0]['genome']} and {children[1]['genome']}")
-            population.extend(children)
-            print(f"Inserted children into population, current population: {len(population)}") 
+        print(f"Children produced: {children[0]['genome']} and {children[1]['genome']}")
+        population.extend(children)
+        print(f"Inserted children into population, current population: {len(population)}") 
 
-            print(f"Mutating children...")
-            mutatedChildren = [mutate(child, 0.1) for child in children]
-            print(f"Mutated children: {mutatedChildren[0]['genome']} and {mutatedChildren[1]['genome']}")
-            population.extend(mutatedChildren)
-            print(f"Inserted mutated children into population, current population: {len(population)}") 
+        print(f"Mutating children...")
+        mutatedChildren = [mutate(child, 0.1) for child in children]
+        print(f"Mutated children: {mutatedChildren[0]['genome']} and {mutatedChildren[1]['genome']}")
+        population.extend(mutatedChildren)
+        print(f"Inserted mutated children into population, current population: {len(population)}") 
 
     
 
