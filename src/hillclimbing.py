@@ -234,3 +234,45 @@ def successor_maker(vehicles):
     return successors
 
 
+def steepest_ascent(vehicles):
+    startTime = time.time()
+    current = vehicles
+    currentFee = calculate_fee(vehicles)
+    iterations = 0
+    history = [currentFee]
+
+    while True:
+        successors = successor_maker(current)
+        if(successors == []):
+            break
+
+        bestSucc = None
+        bestFee = -1
+        for s in successors:
+            successorFee = calculate_fee(s)
+            if(successorFee > bestFee):
+                bestFee = successorFee
+                bestSucc = s
+
+        if bestFee <= currentFee:
+            break    
+        else: 
+            current = bestSucc
+            currentFee = bestFee
+            iterations += 1   # penghitungan iterasi tidak termasuk iterasi terakhir yang gagal
+            history.append(currentFee)
+
+    duration = time.time() - startTime
+    return current, iterations, duration, history
+
+        
+
+
+def main():
+    pass
+
+
+
+if __name__ == "__main__":
+    main()
+
