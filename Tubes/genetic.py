@@ -10,6 +10,10 @@ shipHeight = 7
 shipMatrix = {(i, j): 0 for i in range(shipWidth) for j in range(shipHeight)} 
 shipMaxCapacity = 100
 
+# delayTime mencatat total waktu delay tampilan (pause dan loading)
+# Digunakan untuk memisahkan durasi algoritma dari durasi animasi CLI
+delayTime = 0.0
+
 # Populasi adalah list dari genetik [dengan representasi dict]
 population = List[dict]
 
@@ -31,6 +35,15 @@ vehicleStock = {1: 20, 2: 7, 3: 5, 0: emptySlots}
 # Terkecil = mobil, maksimum mobil = 17
 genomeLength = 17
 
+# Fungsi pause (helper)
+# Pengganti sleep yang sekaligus mencatat total waktu delay
+# supaya durasi algoritma bisa dihitung tanpa delay tampilan
+def pause(seconds: float) -> None:
+    global delayTime
+    startPause = perf_counter()
+    sleep(seconds)
+    delayTime += perf_counter() - startPause
+
 # Fungsi generate_genetic
 # Digunakan untuk menghasilkan genetik
 def generate_genetic(p: population) -> None:
@@ -50,7 +63,7 @@ def generate_population(startPopulationNumber: int) -> population:
     # Memanggil fungsi generate_genetic
     for _ in range(startPopulationNumber):
         generate_genetic(population)
-        sleep(0.2)
+        pause(0.2)
     return population
 
 # Fungsi check_space
@@ -210,6 +223,34 @@ def print_vehicle_tables(placed: list, unplaced: list) -> None:
     for a, b in zip(left, right):
         print(a + "    " + b)
 
+# Fungsi plot_fitness_cli (visualisasi)
+# Digunakan untuk menggambar grafik fitness maksimum dan rata-rata
+# terhadap banyak iterasi yang telah dilewati, langsung di CLI
+def plot_fitness_cli(maxHistory: list, avgHistory: list, height: int = 12) -> None:
+    allValues = maxHistory + avgHistory
+    low = min(allValues)
+    high = max(allValues)
+    if high == low:
+        high = low + 1
+    columnGap = 6 if len(maxHistory) <= 12 else 4
+    width = len(maxHistory) * columnGap
+
+    # * = maksimum, o = rata-rata (maksimum menimpa rata-rata kalau sama)
+    grid = [[" "] * width for _ in range(height + 1)]
+    for idx in range(len(maxHistory)):
+        x = idx * columnGap + 2
+        yMax = round((maxHistory[idx] - low) / (high - low) * height)
+        yAvg = round((avgHistory[idx] - low) / (high - low) * height)
+        grid[height - yAvg][x] = "o"
+        grid[height - yMax][x] = "*"
+    print("Grafik fitness terhadap iterasi   (* = maksimum, o = rata-rata)")
+    for row in range(height + 1):
+        value = high - (high - low) * row / height
+        print(f"{value:7.1f} │" + "".join(grid[row]))
+    print("        └" + "─" * width)
+    labels = "".join(str(i).ljust(columnGap) for i in range(len(maxHistory)))
+    print("         " + labels + " (iterasi)")
+
 # Fungsi calculate_successor
 # Digunakan untuk mencari suksesor dari populasi untuk menjadi parent
 def calculate_successor(population: population) -> list:
@@ -286,7 +327,10 @@ def mutate(child: dict, rate: float) -> dict:
 
 # Fungsi loading (visualisasi)
 # Digunakan untuk membuat loading pada CLI menjadi lebih rapi
+# Lama loading juga dicatat ke delayTime
 def loading(message: str, seconds: float = 1.5) -> None:
+    global delayTime
+    startLoading = perf_counter()
     frames = ["   ", ".  ", ".. ", "..."]
     endTime = time() + seconds
     i = 0
@@ -295,6 +339,7 @@ def loading(message: str, seconds: float = 1.5) -> None:
         sleep(0.3)
         i += 1
     print(f"\r{message}...")   
+    delayTime += perf_counter() - startLoading
 
 # Fungsi input_integer (helper)
 # Digunakan untuk memastikan input tidak salah
@@ -319,7 +364,10 @@ def main():
     divider("POPULASI AWAL")
     loading("Menghasilkan populasi awal sebanyak " + str(startPopulationNumber)+" genetik", 1)
     population = generate_population(startPopulationNumber)
+    # Timer dimulai setelah populasi awal selesai dibuat
+    # delayAtStart menyimpan delay yang sudah terjadi sebelum timer mulai
     startTime = perf_counter()
+    delayAtStart = delayTime
 
     # sleep(1)
     divider("KONDISI KAPAL AWAL")
@@ -333,11 +381,13 @@ def main():
     for gen in population:  
         calculate_fitness(gen)
         print(f"Genetik: {gen['genome']}, Fitness: {gen['fitness']}")
-        sleep(0.2)
-        # print(f"Vehicles placed: {gen['vehicles_placed']}") 
-        # print(f"Matriks kapal setelah penempatan kendaraan:")
-        # print_matrix(shipMatrix)
+        pause(0.2)
         reset_ship()
+
+    # History fitness maksimum dan rata-rata untuk plot
+    # Indeks 0 adalah populasi awal sebelum iterasi pertama
+    maxHistory = [max(gen["fitness"] for gen in population)]
+    avgHistory = [sum(gen["fitness"] for gen in population) / len(population)]
 
     # sleep(1)
     divider("ITERASI GENERASI")
@@ -377,6 +427,10 @@ def main():
         loading("Menambahkan mutated children ke dalam populasi", 1)
         print(f"Berhasil menambahkan mutated ke dalam populasi, total populasi: {len(population)}") 
 
+        # Mencatat fitness maksimum dan rata-rata di akhir iterasi
+        maxHistory.append(max(gen["fitness"] for gen in population))
+        avgHistory.append(sum(gen["fitness"] for gen in population) / len(population))
+
     # sleep(1)
     divider("ITERASI SELESAI")
     print(f"Iterasi untuk {generationNumber} generasi selesai, populasi akhir: {len(population)}")
@@ -384,22 +438,40 @@ def main():
     for gen in population:
         calculate_fitness(gen)
         print(f"Genetik: {gen['genome']}, Fitness: {gen['fitness']}")
-        sleep(0.2)
+        pause(0.2)
         reset_ship()
+
+    # Timer berhenti setelah genetik terbaik ditemukan
+    # Durasi algoritma = durasi total dikurangi delay tampilan
+    best = max(population, key=lambda gen: gen["fitness"])
+    totalTime = perf_counter() - startTime
+    algorithmTime = totalTime - (delayTime - delayAtStart)
 
     # sleep(1)
     divider("BEST GENETIC")
-    best = max(population, key=lambda gen: gen["fitness"])
-    elapsedTime = perf_counter() - startTime
     print(f"Fitness function tertinggi pada populasi akhir: {best['fitness']}")
     print(f"Diraih oleh individu dengan genetik: {best['genome']}")
-    print(f"Waktu yang dibutuhkan sejak populasi awal selesai dibuat: {elapsedTime:.2f} detik")
 
     calculate_fitness(best)
     print_vehicle_tables(best["vehicles_placed"], best["vehicles_unplaced"])
     print(f"Matriks kapal setelah penempatan kendaraan:")
     print_matrix(shipMatrix)
     reset_ship()
+
+    # sleep(1)
+    divider("GRAFIK FITNESS")
+    plot_fitness_cli(maxHistory, avgHistory)
+    print()
+    for i in range(len(maxHistory)):
+        print(f"Iterasi {i}: maks = {maxHistory[i]}, rata-rata = {avgHistory[i]:.1f}")
+
+    # sleep(1)
+    divider("RINGKASAN EKSPERIMEN")
+    print(f"Jumlah populasi awal  : {startPopulationNumber}")
+    print(f"Banyak iterasi        : {generationNumber}")
+    print(f"Fitness akhir         : {best['fitness']}")
+    print(f"Durasi total          : {totalTime:.2f} detik (termasuk delay tampilan)")
+    print(f"Durasi algoritma      : {algorithmTime:.4f} detik (tanpa delay tampilan)")
 
 if __name__ == "__main__":
     main()
