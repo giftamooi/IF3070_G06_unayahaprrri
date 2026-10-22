@@ -44,7 +44,7 @@ class Vehicle():
      
 
 
-def calculate_fee(vehicles):
+def calculate_value(vehicles):
     totalShippingFee = 0
     for v in vehicles:
         # jika kendaraan di luar geladak, tidak perlu dihitung
@@ -237,9 +237,9 @@ def successor_maker(vehicles):
 def steepest_ascent(vehicles):
     startTime = time.time()
     current = vehicles
-    currentFee = calculate_fee(vehicles)
+    currentValue = calculate_value(vehicles)
     iterations = 0
-    history = [currentFee]
+    history = [currentValue]
 
     while True:
         successors = successor_maker(current)
@@ -247,20 +247,20 @@ def steepest_ascent(vehicles):
             break
 
         bestSucc = None
-        bestFee = -1
+        bestValue = -1
         for s in successors:
-            successorFee = calculate_fee(s)
-            if(successorFee > bestFee):
-                bestFee = successorFee
+            successorValue = calculate_value(s)
+            if(successorValue > bestValue):
+                bestValue = successorValue
                 bestSucc = s
 
-        if bestFee <= currentFee:
+        if bestValue <= currentValue:
             break    
         else: 
             current = bestSucc
-            currentFee = bestFee
+            currentValue = bestValue
             iterations += 1   # penghitungan iterasi tidak termasuk iterasi terakhir yang gagal
-            history.append(currentFee)
+            history.append(currentValue)
 
     duration = time.time() - startTime
     return current, iterations, duration, history
@@ -373,8 +373,8 @@ def main():
         results.append({
             "initialState" : initialState,
             "endState" : endState,
-            "startFee" : history[0],
-            "endFee" : history[-1],
+            "startValue" : history[0],
+            "endValue" : history[-1],
             "iterations" : iterations,
             "duration" : duration,
             "history" : history,
@@ -397,8 +397,8 @@ def main():
         print_matrix(matrix)
         print_vehicle_tables(placed, unplaced)
         
-        print(f"Fee awal : {r['startFee']}")
-        print(f"Fee akhir : {r['endFee']}")
+        print(f"Value awal : {r['startValue']}")
+        print(f"Value akhir : {r['endValue']}")
         print(f"Banyak iterasi : {r['iterations']}")
         print(f"Durasi : {r['duration']:.2f} detik")
 
