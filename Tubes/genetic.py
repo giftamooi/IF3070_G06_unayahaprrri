@@ -153,7 +153,7 @@ def reset_ship() -> None:
 def print_matrix(matrix: dict) -> None:
     cellWidth = max(2, len(str(max(matrix.values()))))
     segment = "─" * (cellWidth + 2)
-    # Menggunakan ASCII agar tabel menjadi rapih
+    # Menggunakan unicode agar tabel menjadi rapih
     print("┌" + "┬".join([segment] * shipHeight) + "┐")
     for i in range(shipWidth):
         cells = [f" {str(matrix[(i, j)]).rjust(cellWidth)} " for j in range(shipHeight)]
@@ -211,7 +211,7 @@ def print_vehicle_tables(placed: list, unplaced: list) -> None:
         print(a + "    " + b)
 
 # Fungsi calculate_successor
-# Digunakan untukencari suksesor dari populasi untuk menjadi parent
+# Digunakan untuk mencari suksesor dari populasi untuk menjadi parent
 def calculate_successor(population: population) -> list:
     totalFitness = 0
     for gen in population:
@@ -253,33 +253,39 @@ def build_child(first: list, second: list, p: int) -> list:
     return genome
 
 
-# lanjut ngecomment besok aku MAGER
+# Fungsi crossover
+# Digunakan untuk menukar sekian digit parentA dan B (crossing over)
+# Memanggil build_child untuk memastikan anak yang di generate sesuai stock vehicle
 def crossover(parentA: dict, parentB: dict):
     p = random.randint(1, genomeLength - 1)
     genomeA = build_child(parentA["genome"], parentB["genome"], p)
     genomeB = build_child(parentB["genome"], parentA["genome"], p)
     return {"genome": genomeA, "fitness": 0}, {"genome": genomeB, "fitness": 0}
 
+# Fungsi mutate
+# Digunakan untuk memutasi salah satu digit random dari genome
+# Mutasi memperhatikan sisa stock mobil
 def mutate(child: dict, rate: float) -> dict:
     genome = child["genome"].copy()
-    sisa = vehicleStock.copy()
+    leftovers = vehicleStock.copy()
     for g in genome:
-        sisa[g] -= 1
-
+        leftovers[g] -= 1
     for i in range(genomeLength):
         if random.random() < rate:
             if random.random() < 0.5:
                 j = random.randint(0, genomeLength - 1)
                 genome[i], genome[j] = genome[j], genome[i]
             else:
-                baru = random.randint(0, 3)
-                if sisa[baru] > 0:
-                    sisa[genome[i]] += 1
-                    sisa[baru] -= 1
-                    genome[i] = baru
+                # Memastikan digit baru mutasi memenuhi stok vehicle
+                newDigit = random.randint(0, 3)
+                if leftovers[newDigit] > 0:
+                    leftovers[genome[i]] += 1
+                    leftovers[newDigit] -= 1
+                    genome[i] = newDigit
     return {"genome": genome, "fitness": 0}
 
-
+# Fungsi loading (visualisasi)
+# Digunakan untuk membuat loading pada CLI menjadi lebih rapi
 def loading(message: str, seconds: float = 1.5) -> None:
     frames = ["   ", ".  ", ".. ", "..."]
     endTime = time() + seconds
@@ -290,11 +296,24 @@ def loading(message: str, seconds: float = 1.5) -> None:
         i += 1
     print(f"\r{message}...")   
 
+# Fungsi input_integer (helper)
+# Digunakan untuk memastikan input tidak salah
+# input integer dan wajib minimal sekian
+def input_integer(prompt: str, minimum: int) -> int:
+    while True:
+        try:
+            value = int(input(prompt))
+            if value >= minimum:
+                return value
+            print(f"Masukkan angka minimal {minimum}.")
+        except ValueError:
+            print("Input harus berupa angka bulat.")
+
 # Fungsi main
 def main():
     divider("GENETIC ALGORITHM")
-    startPopulationNumber = int(input("Masukkan jumlah populasi awal: "))
-    generationNumber = int(input("Masukkan jumlah generasi: "))
+    startPopulationNumber = input_integer("Masukkan jumlah populasi awal: ", 2) # Minimum 2 populasi awal
+    generationNumber = input_integer("Masukkan jumlah generasi: ", 1) # Minimum 1 generasi iterasi
 
     sleep(1)
     divider("POPULASI AWAL")
@@ -327,7 +346,7 @@ def main():
         divider(f"GENERASI {generation + 1}")          
         sleep(1)
         divider("PARENT")  
-        loading(f"Memilih dua individu terbaik menjadi parent")      
+        loading(f"Memilih dua individu sesuai chance untuk menjadi parent")      
         successors = calculate_successor(population)
         print(f"PARENT1:{successors[0]['genome']}\nPARENT2:{successors[1]['genome']}")
 
