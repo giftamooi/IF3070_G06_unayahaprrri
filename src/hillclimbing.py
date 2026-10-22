@@ -265,11 +265,97 @@ def steepest_ascent(vehicles):
     duration = time.time() - startTime
     return current, iterations, duration, history
 
-        
+
+def print_matrix(matrix: dict) -> None:
+    cellWidth = max(2, len(str(max(matrix.values()))))
+    segment = "─" * (cellWidth + 2)
+    # Menggunakan unicode agar tabel menjadi rapih
+    print("┌" + "┬".join([segment] * shipLength) + "┐")
+    for i in range(shipWidth):
+        cells = [f" {str(matrix[(i, j)]).rjust(cellWidth)} " for j in range(shipLength)]
+        print("│" + "│".join(cells) + "│")
+        if i < shipWidth - 1:
+            print("├" + "┼".join([segment] * shipLength) + "┤")
+    print("└" + "┴".join([segment] * shipLength) + "┘")
+
+# Fungsi divider (visualisasi)
+# Digunakan untuk membantu memisahkan output
+# dan menjadi judul besar yang jelas
+def divider(title: str = "", width: int = 60, char: str = "═") -> None:
+    if title == "":
+        print(char * width)
+        return
+    label = f" {title} "
+    left = (width - len(label)) // 2
+    right = width - len(label) - left
+    print()
+    print(char * left + label + char * right)
+    print()
+
+# Fungsi build_table (visualisasi)
+# Digunakan untuk membuat tabel
+def build_table(title: str, headers: tuple, rows: list) -> list:
+    codeW = max([len(headers[0])] + [len(str(c)) for c, _ in rows])
+    typeW = max([len(headers[1])] + [len(t) for _, t in rows])
+    totalW = codeW + typeW + 7
+    border = lambda l, m, r: l + "─" * (codeW + 2) + m + "─" * (typeW + 2) + r
+    lines = [
+        title.center(totalW),
+        border("┌", "┬", "┐"),
+        f"│ {headers[0].ljust(codeW)} │ {headers[1].ljust(typeW)} │",
+        border("├", "┼", "┤"),
+    ]
+    for c, t in rows:
+        lines.append(f"│ {str(c).rjust(codeW)} │ {t.ljust(typeW)} │")
+    if not rows:
+        lines.append(f"│ {'-'.center(codeW)} │ {'-'.center(typeW)} │")
+    lines.append(border("└", "┴", "┘"))
+    return lines
+
+# Fungsi print_vehicle_tables
+# Digunakan untuk memprint dua table di akhir
+# Tabel yang menunjukkan kendaraan placed dan unplaced
+def print_vehicle_tables(placed: list, unplaced: list) -> None:
+    left = build_table("PLACED", ("Code", "Type"), placed)
+    right = build_table("UNPLACED", ("Jumlah", "Jenis"), unplaced)
+    height = max(len(left), len(right))
+    while len(left) < height:
+        left.append(" " * len(left[0]))
+    while len(right) < height:
+        right.append(" " * len(right[0]))
+    for a, b in zip(left, right):
+        print(a + "    " + b)
 
 
 def main():
-    pass
+    numberRuns= 3
+    results = []
+
+    for run in range(numberRuns):
+        vehicles = create_vehicles()  # buat kendaraan
+        vehicles = create_initial_state(vehicles)  # beberapa masu ke geladak sebagai initial state
+        initialState = copy.deepcopy(vehicles)
+        endState, iterations, duration, history = steepest_ascent(vehicles)
+
+        results.append({
+            "initialState" : initialState,
+            "endState" : endState,
+            "startFee" : history[0],
+            "endFee" : history[-1],
+            "iterations" : iterations,
+            "duration" : duration,
+            "history" : history,
+        })
+
+    for i in range(numberRuns):
+        r = results[i]
+        print("=" * 40)
+        print("RUN " + str(i+1))
+        print("=" * 40)
+        print(f"Fee awal : {r['startFee']}")
+        print(f"Fee akhir : {r['endFee']}")
+        print(f"Banyak iterasi : {r['iterations']}")
+        print(f"Durasi : {r['duration']:.2f} detik")
 
 
 
