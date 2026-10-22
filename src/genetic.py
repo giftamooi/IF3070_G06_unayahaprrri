@@ -35,15 +35,6 @@ vehicleStock = {1: 20, 2: 7, 3: 5, 0: emptySlots}
 # Terkecil = mobil, maksimum mobil = 17
 genomeLength = 17
 
-# Fungsi pause (helper)
-# Pengganti sleep yang sekaligus mencatat total waktu delay
-# supaya durasi algoritma bisa dihitung tanpa delay tampilan
-def pause(seconds: float) -> None:
-    global delayTime
-    startPause = perf_counter()
-    sleep(seconds)
-    delayTime += perf_counter() - startPause
-
 # Fungsi generate_genetic
 # Digunakan untuk menghasilkan genetik
 def generate_genetic(p: population) -> None:
@@ -63,7 +54,6 @@ def generate_population(startPopulationNumber: int) -> population:
     # Memanggil fungsi generate_genetic
     for _ in range(startPopulationNumber):
         generate_genetic(population)
-        pause(0.2)
     return population
 
 # Fungsi check_space
@@ -325,22 +315,6 @@ def mutate(child: dict, rate: float) -> dict:
                     genome[i] = newDigit
     return {"genome": genome, "fitness": 0}
 
-# Fungsi loading (visualisasi)
-# Digunakan untuk membuat loading pada CLI menjadi lebih rapi
-# Lama loading juga dicatat ke delayTime
-def loading(message: str, seconds: float = 1.5) -> None:
-    global delayTime
-    startLoading = perf_counter()
-    frames = ["   ", ".  ", ".. ", "..."]
-    endTime = time() + seconds
-    i = 0
-    while time() < endTime:
-        print(f"\r{message}{frames[i % 4]}", end="", flush=True)
-        sleep(0.3)
-        i += 1
-    print(f"\r{message}...")   
-    delayTime += perf_counter() - startLoading
-
 # Fungsi input_integer (helper)
 # Digunakan untuk memastikan input tidak salah
 # input integer dan wajib minimal sekian
@@ -362,7 +336,7 @@ def main():
 
     # sleep(1)
     divider("POPULASI AWAL")
-    loading("Menghasilkan populasi awal sebanyak " + str(startPopulationNumber)+" genetik", 1)
+    print(f"Menghasilkan populasi awal sebanyak " + str(startPopulationNumber)+" genetik...")
     population = generate_population(startPopulationNumber)
     # Timer dimulai setelah populasi awal selesai dibuat
     # delayAtStart menyimpan delay yang sudah terjadi sebelum timer mulai
@@ -371,17 +345,16 @@ def main():
 
     # sleep(1)
     divider("KONDISI KAPAL AWAL")
-    loading(f"Mengecek kondisi awal kapal", 1)
+    print(f"Mengecek kondisi awal kapal...")
     print(f"Kondisi kapal ukuran {shipHeight} x {shipWidth} dengan kapasitas maksimal {shipMaxCapacity} ton:")
     print_matrix(shipMatrix)
 
     # sleep(1)
     divider("FITNESS FUNCTION POPULASI")
-    loading("Menghitung fitness function untuk tiap individu pada populasi", 1)
+    print(f"Menghitung fitness function untuk tiap individu pada populasi...")
     for gen in population:  
         calculate_fitness(gen)
         print(f"Genetik: {gen['genome']}, Fitness: {gen['fitness']}")
-        pause(0.2)
         reset_ship()
 
     # History fitness maksimum dan rata-rata untuk plot
@@ -391,19 +364,19 @@ def main():
 
     # sleep(1)
     divider("ITERASI GENERASI")
-    loading("Memulai iterasi untuk " + str(generationNumber) + " generasi", 1)
+    print(f"Memulai iterasi untuk " + str(generationNumber) + " generasi...")
     for generation in range(generationNumber):
         # sleep(1)
         divider(f"GENERASI {generation + 1}")          
         # sleep(1)
         divider("PARENT")  
-        loading(f"Memilih dua individu sesuai chance untuk menjadi parent")      
+        print(f"Memilih dua individu sesuai chance untuk menjadi parent...")      
         successors = calculate_successor(population)
         print(f"PARENT1:{successors[0]['genome']}\nPARENT2:{successors[1]['genome']}")
 
         # sleep(1)
         divider("CROSSOVER")  
-        loading("Menjalankan fungsi crossover pada parent", 1)
+        print(f"Menjalankan fungsi crossover pada parent...")
         children = crossover(successors[0], successors[1])
         for child in children:
             calculate_fitness(child)
@@ -411,12 +384,12 @@ def main():
         print(f"Memperoleh 2 children hasil crossover kedua parent")
         print(f"CHILD1:{children[0]['genome']}\nCHILD2:{children[1]['genome']}")
         population.extend(children)
-        loading("Menambahkan children ke dalam populasi", 1)
+        print(f"Menambahkan children ke dalam populasi...")
         print(f"Berhasil menambahkan children ke dalam populasi, total populasi: {len(population)}") 
 
         # sleep(1)
         divider("MUTATION")  
-        loading(f"Menjalankan fungsi mutate pada children")
+        print(f"Menjalankan fungsi mutate pada children...")
         mutatedChildren = [mutate(child, 0.1) for child in children]
         for mutant in mutatedChildren:
             calculate_fitness(mutant)
@@ -424,7 +397,7 @@ def main():
         print(f"Memperoleh 2 mutated children hasil mutasi kedua child:")
         print(f"MUTATED1:{mutatedChildren[0]['genome']}\nMUTATED2:{mutatedChildren[1]['genome']}")
         population.extend(mutatedChildren)
-        loading("Menambahkan mutated children ke dalam populasi", 1)
+        print(f"Menambahkan mutated children ke dalam populasi...")
         print(f"Berhasil menambahkan mutated ke dalam populasi, total populasi: {len(population)}") 
 
         # Mencatat fitness maksimum dan rata-rata di akhir iterasi
@@ -434,11 +407,10 @@ def main():
     # sleep(1)
     divider("ITERASI SELESAI")
     print(f"Iterasi untuk {generationNumber} generasi selesai, populasi akhir: {len(population)}")
-    loading("Menghitung fitness function untuk tiap individu pada populasi akhir", 1)
+    print(f"Menghitung fitness function untuk tiap individu pada populasi akhir")
     for gen in population:
         calculate_fitness(gen)
         print(f"Genetik: {gen['genome']}, Fitness: {gen['fitness']}")
-        pause(0.2)
         reset_ship()
 
     # Timer berhenti setelah genetik terbaik ditemukan

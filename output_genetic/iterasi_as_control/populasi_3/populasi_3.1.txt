@@ -1,0 +1,430 @@
+════════════════════ GENETIC ALGORITHM ═════════════════════
+
+Masukkan jumlah populasi awal: 3
+Masukkan jumlah generasi: 10
+
+══════════════════════ POPULASI AWAL ═══════════════════════
+
+Menghasilkan populasi awal sebanyak 3 genetik...
+Menghasilkan: [0, 2, 1, 1, 1, 1, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0]
+Menghasilkan: [0, 1, 2, 1, 3, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0]
+Menghasilkan: [1, 3, 1, 2, 2, 1, 0, 2, 2, 2, 1, 0, 0, 1, 1, 1, 2]
+
+════════════════════ KONDISI KAPAL AWAL ════════════════════
+
+Mengecek kondisi awal kapal...
+Kondisi kapal ukuran 7 x 5 dengan kapasitas maksimal 100 ton:
+┌────┬────┬────┬────┬────┬────┬────┐
+│  0 │  0 │  0 │  0 │  0 │  0 │  0 │
+├────┼────┼────┼────┼────┼────┼────┤
+│  0 │  0 │  0 │  0 │  0 │  0 │  0 │
+├────┼────┼────┼────┼────┼────┼────┤
+│  0 │  0 │  0 │  0 │  0 │  0 │  0 │
+├────┼────┼────┼────┼────┼────┼────┤
+│  0 │  0 │  0 │  0 │  0 │  0 │  0 │
+├────┼────┼────┼────┼────┼────┼────┤
+│  0 │  0 │  0 │  0 │  0 │  0 │  0 │
+└────┴────┴────┴────┴────┴────┴────┘
+
+════════════════ FITNESS FUNCTION POPULASI ═════════════════
+
+Menghitung fitness function untuk tiap individu pada populasi...
+Genetik: [0, 2, 1, 1, 1, 1, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0], Fitness: 270
+Genetik: [0, 1, 2, 1, 3, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0], Fitness: 300
+Genetik: [1, 3, 1, 2, 2, 1, 0, 2, 2, 2, 1, 0, 0, 1, 1, 1, 2], Fitness: 260
+
+═════════════════════ ITERASI GENERASI ═════════════════════
+
+Memulai iterasi untuk 10 generasi...
+
+════════════════════════ GENERASI 1 ════════════════════════
+
+
+══════════════════════════ PARENT ══════════════════════════
+
+Memilih dua individu sesuai chance untuk menjadi parent...
+PARENT1:[0, 1, 2, 1, 3, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0]
+PARENT2:[1, 3, 1, 2, 2, 1, 0, 2, 2, 2, 1, 0, 0, 1, 1, 1, 2]
+
+════════════════════════ CROSSOVER ═════════════════════════
+
+Menjalankan fungsi crossover pada parent...
+Memperoleh 2 children hasil crossover kedua parent
+CHILD1:[0, 1, 2, 1, 3, 1, 0, 2, 2, 2, 1, 0, 0, 1, 1, 1, 2]
+CHILD2:[1, 3, 1, 2, 2, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0]
+Menambahkan children ke dalam populasi...
+Berhasil menambahkan children ke dalam populasi, total populasi: 5
+
+═════════════════════════ MUTATION ═════════════════════════
+
+Menjalankan fungsi mutate pada children...
+Memperoleh 2 mutated children hasil mutasi kedua child:
+MUTATED1:[0, 1, 0, 1, 3, 1, 0, 2, 2, 2, 1, 0, 2, 1, 1, 1, 2]
+MUTATED2:[1, 3, 1, 2, 2, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0]
+Menambahkan mutated children ke dalam populasi...
+Berhasil menambahkan mutated ke dalam populasi, total populasi: 7
+
+════════════════════════ GENERASI 2 ════════════════════════
+
+
+══════════════════════════ PARENT ══════════════════════════
+
+Memilih dua individu sesuai chance untuk menjadi parent...
+PARENT1:[0, 2, 1, 1, 1, 1, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0]
+PARENT2:[0, 1, 2, 1, 3, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0]
+
+════════════════════════ CROSSOVER ═════════════════════════
+
+Menjalankan fungsi crossover pada parent...
+Memperoleh 2 children hasil crossover kedua parent
+CHILD1:[0, 2, 1, 1, 3, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0]
+CHILD2:[0, 1, 2, 1, 1, 1, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0]
+Menambahkan children ke dalam populasi...
+Berhasil menambahkan children ke dalam populasi, total populasi: 9
+
+═════════════════════════ MUTATION ═════════════════════════
+
+Menjalankan fungsi mutate pada children...
+Memperoleh 2 mutated children hasil mutasi kedua child:
+MUTATED1:[0, 2, 1, 1, 3, 1, 1, 1, 1, 3, 3, 1, 1, 3, 2, 1, 0]
+MUTATED2:[1, 1, 1, 1, 0, 0, 0, 2, 1, 1, 3, 3, 2, 0, 2, 0, 1]
+Menambahkan mutated children ke dalam populasi...
+Berhasil menambahkan mutated ke dalam populasi, total populasi: 11
+
+════════════════════════ GENERASI 3 ════════════════════════
+
+
+══════════════════════════ PARENT ══════════════════════════
+
+Memilih dua individu sesuai chance untuk menjadi parent...
+PARENT1:[1, 1, 1, 1, 0, 0, 0, 2, 1, 1, 3, 3, 2, 0, 2, 0, 1]
+PARENT2:[0, 1, 2, 1, 1, 1, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0]
+
+════════════════════════ CROSSOVER ═════════════════════════
+
+Menjalankan fungsi crossover pada parent...
+Memperoleh 2 children hasil crossover kedua parent
+CHILD1:[1, 1, 2, 1, 1, 1, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0]
+CHILD2:[0, 1, 1, 1, 0, 0, 0, 2, 1, 1, 3, 3, 2, 0, 2, 0, 1]
+Menambahkan children ke dalam populasi...
+Berhasil menambahkan children ke dalam populasi, total populasi: 13
+
+═════════════════════════ MUTATION ═════════════════════════
+
+Menjalankan fungsi mutate pada children...
+Memperoleh 2 mutated children hasil mutasi kedua child:
+MUTATED1:[1, 1, 2, 1, 1, 1, 0, 2, 1, 1, 3, 3, 3, 1, 2, 0, 1]
+MUTATED2:[0, 1, 1, 1, 0, 0, 0, 2, 1, 1, 3, 3, 2, 0, 2, 0, 1]
+Menambahkan mutated children ke dalam populasi...
+Berhasil menambahkan mutated ke dalam populasi, total populasi: 15
+
+════════════════════════ GENERASI 4 ════════════════════════
+
+
+══════════════════════════ PARENT ══════════════════════════
+
+Memilih dua individu sesuai chance untuk menjadi parent...
+PARENT1:[0, 1, 1, 1, 0, 0, 0, 2, 1, 1, 3, 3, 2, 0, 2, 0, 1]
+PARENT2:[0, 2, 1, 1, 3, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0]
+
+════════════════════════ CROSSOVER ═════════════════════════
+
+Menjalankan fungsi crossover pada parent...
+Memperoleh 2 children hasil crossover kedua parent
+CHILD1:[0, 1, 1, 1, 0, 0, 0, 2, 1, 1, 3, 3, 3, 1, 2, 1, 0]
+CHILD2:[0, 2, 1, 1, 3, 1, 1, 1, 1, 1, 3, 1, 2, 0, 2, 0, 1]
+Menambahkan children ke dalam populasi...
+Berhasil menambahkan children ke dalam populasi, total populasi: 17
+
+═════════════════════════ MUTATION ═════════════════════════
+
+Menjalankan fungsi mutate pada children...
+Memperoleh 2 mutated children hasil mutasi kedua child:
+MUTATED1:[1, 0, 1, 0, 0, 0, 0, 2, 1, 1, 3, 3, 3, 1, 2, 1, 0]
+MUTATED2:[3, 1, 1, 1, 3, 1, 1, 1, 1, 2, 3, 1, 2, 0, 2, 0, 1]
+Menambahkan mutated children ke dalam populasi...
+Berhasil menambahkan mutated ke dalam populasi, total populasi: 19
+
+════════════════════════ GENERASI 5 ════════════════════════
+
+
+══════════════════════════ PARENT ══════════════════════════
+
+Memilih dua individu sesuai chance untuk menjadi parent...
+PARENT1:[0, 1, 2, 1, 3, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0]
+PARENT2:[1, 1, 2, 1, 1, 1, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0]
+
+════════════════════════ CROSSOVER ═════════════════════════
+
+Menjalankan fungsi crossover pada parent...
+Memperoleh 2 children hasil crossover kedua parent
+CHILD1:[0, 1, 2, 1, 3, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0]
+CHILD2:[1, 1, 2, 1, 1, 1, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0]
+Menambahkan children ke dalam populasi...
+Berhasil menambahkan children ke dalam populasi, total populasi: 21
+
+═════════════════════════ MUTATION ═════════════════════════
+
+Menjalankan fungsi mutate pada children...
+Memperoleh 2 mutated children hasil mutasi kedua child:
+MUTATED1:[0, 1, 2, 1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 2, 1, 0]
+MUTATED2:[1, 1, 2, 1, 3, 1, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0]
+Menambahkan mutated children ke dalam populasi...
+Berhasil menambahkan mutated ke dalam populasi, total populasi: 23
+
+════════════════════════ GENERASI 6 ════════════════════════
+
+
+══════════════════════════ PARENT ══════════════════════════
+
+Memilih dua individu sesuai chance untuk menjadi parent...
+PARENT1:[0, 1, 2, 1, 3, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0]
+PARENT2:[0, 1, 2, 1, 1, 1, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0]
+
+════════════════════════ CROSSOVER ═════════════════════════
+
+Menjalankan fungsi crossover pada parent...
+Memperoleh 2 children hasil crossover kedua parent
+CHILD1:[0, 1, 2, 1, 3, 1, 1, 1, 1, 1, 3, 3, 2, 1, 2, 0, 0]
+CHILD2:[0, 1, 2, 1, 1, 1, 0, 2, 1, 1, 3, 1, 3, 1, 2, 1, 0]
+Menambahkan children ke dalam populasi...
+Berhasil menambahkan children ke dalam populasi, total populasi: 25
+
+═════════════════════════ MUTATION ═════════════════════════
+
+Menjalankan fungsi mutate pada children...
+Memperoleh 2 mutated children hasil mutasi kedua child:
+MUTATED1:[0, 1, 2, 1, 3, 1, 1, 1, 1, 3, 3, 1, 2, 1, 2, 0, 0]
+MUTATED2:[0, 1, 2, 1, 1, 1, 2, 0, 2, 1, 1, 1, 3, 1, 1, 1, 0]
+Menambahkan mutated children ke dalam populasi...
+Berhasil menambahkan mutated ke dalam populasi, total populasi: 27
+
+════════════════════════ GENERASI 7 ════════════════════════
+
+
+══════════════════════════ PARENT ══════════════════════════
+
+Memilih dua individu sesuai chance untuk menjadi parent...
+PARENT1:[3, 1, 1, 1, 3, 1, 1, 1, 1, 2, 3, 1, 2, 0, 2, 0, 1]
+PARENT2:[0, 1, 2, 1, 1, 1, 0, 2, 1, 1, 3, 1, 3, 1, 2, 1, 0]
+
+════════════════════════ CROSSOVER ═════════════════════════
+
+Menjalankan fungsi crossover pada parent...
+Memperoleh 2 children hasil crossover kedua parent
+CHILD1:[3, 1, 1, 1, 3, 1, 1, 1, 1, 2, 3, 1, 3, 1, 2, 1, 0]
+CHILD2:[0, 1, 2, 1, 1, 1, 0, 2, 1, 1, 3, 1, 2, 0, 2, 0, 1]
+Menambahkan children ke dalam populasi...
+Berhasil menambahkan children ke dalam populasi, total populasi: 29
+
+═════════════════════════ MUTATION ═════════════════════════
+
+Menjalankan fungsi mutate pada children...
+Memperoleh 2 mutated children hasil mutasi kedua child:
+MUTATED1:[3, 1, 1, 1, 3, 1, 1, 1, 1, 2, 3, 1, 3, 1, 2, 1, 0]
+MUTATED2:[0, 1, 2, 1, 1, 1, 0, 2, 0, 1, 3, 1, 2, 0, 2, 1, 1]
+Menambahkan mutated children ke dalam populasi...
+Berhasil menambahkan mutated ke dalam populasi, total populasi: 31
+
+════════════════════════ GENERASI 8 ════════════════════════
+
+
+══════════════════════════ PARENT ══════════════════════════
+
+Memilih dua individu sesuai chance untuk menjadi parent...
+PARENT1:[1, 0, 1, 0, 0, 0, 0, 2, 1, 1, 3, 3, 3, 1, 2, 1, 0]
+PARENT2:[0, 1, 1, 1, 0, 0, 0, 2, 1, 1, 3, 3, 2, 0, 2, 0, 1]
+
+════════════════════════ CROSSOVER ═════════════════════════
+
+Menjalankan fungsi crossover pada parent...
+Memperoleh 2 children hasil crossover kedua parent
+CHILD1:[1, 0, 1, 0, 0, 0, 0, 2, 1, 1, 3, 3, 2, 0, 2, 0, 1]
+CHILD2:[0, 1, 1, 1, 0, 0, 0, 2, 1, 1, 3, 3, 3, 1, 2, 1, 0]
+Menambahkan children ke dalam populasi...
+Berhasil menambahkan children ke dalam populasi, total populasi: 33
+
+═════════════════════════ MUTATION ═════════════════════════
+
+Menjalankan fungsi mutate pada children...
+Memperoleh 2 mutated children hasil mutasi kedua child:
+MUTATED1:[1, 0, 1, 0, 2, 0, 0, 2, 1, 1, 3, 3, 2, 0, 1, 0, 1]
+MUTATED2:[0, 1, 1, 1, 0, 0, 0, 2, 1, 1, 3, 3, 3, 1, 2, 1, 0]
+Menambahkan mutated children ke dalam populasi...
+Berhasil menambahkan mutated ke dalam populasi, total populasi: 35
+
+════════════════════════ GENERASI 9 ════════════════════════
+
+
+══════════════════════════ PARENT ══════════════════════════
+
+Memilih dua individu sesuai chance untuk menjadi parent...
+PARENT1:[1, 0, 1, 0, 0, 0, 0, 2, 1, 1, 3, 3, 3, 1, 2, 1, 0]
+PARENT2:[0, 2, 1, 1, 1, 1, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0]
+
+════════════════════════ CROSSOVER ═════════════════════════
+
+Menjalankan fungsi crossover pada parent...
+Memperoleh 2 children hasil crossover kedua parent
+CHILD1:[1, 0, 1, 0, 0, 0, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0]
+CHILD2:[0, 2, 1, 1, 1, 1, 0, 2, 1, 1, 3, 3, 3, 1, 2, 1, 0]
+Menambahkan children ke dalam populasi...
+Berhasil menambahkan children ke dalam populasi, total populasi: 37
+
+═════════════════════════ MUTATION ═════════════════════════
+
+Menjalankan fungsi mutate pada children...
+Memperoleh 2 mutated children hasil mutasi kedua child:
+MUTATED1:[1, 0, 1, 0, 0, 0, 0, 2, 3, 1, 1, 3, 2, 1, 2, 0, 0]
+MUTATED2:[0, 2, 1, 1, 1, 1, 0, 2, 1, 1, 3, 1, 3, 1, 2, 3, 0]
+Menambahkan mutated children ke dalam populasi...
+Berhasil menambahkan mutated ke dalam populasi, total populasi: 39
+
+═══════════════════════ GENERASI 10 ════════════════════════
+
+
+══════════════════════════ PARENT ══════════════════════════
+
+Memilih dua individu sesuai chance untuk menjadi parent...
+PARENT1:[1, 0, 1, 0, 0, 0, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0]
+PARENT2:[1, 3, 1, 2, 2, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0]
+
+════════════════════════ CROSSOVER ═════════════════════════
+
+Menjalankan fungsi crossover pada parent...
+Memperoleh 2 children hasil crossover kedua parent
+CHILD1:[1, 3, 1, 2, 2, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0]
+CHILD2:[1, 0, 1, 0, 0, 0, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0]
+Menambahkan children ke dalam populasi...
+Berhasil menambahkan children ke dalam populasi, total populasi: 41
+
+═════════════════════════ MUTATION ═════════════════════════
+
+Menjalankan fungsi mutate pada children...
+Memperoleh 2 mutated children hasil mutasi kedua child:
+MUTATED1:[1, 3, 1, 2, 2, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0]
+MUTATED2:[1, 0, 1, 0, 0, 0, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0]
+Menambahkan mutated children ke dalam populasi...
+Berhasil menambahkan mutated ke dalam populasi, total populasi: 43
+
+═════════════════════ ITERASI SELESAI ══════════════════════
+
+Iterasi untuk 10 generasi selesai, populasi akhir: 43
+Menghitung fitness function untuk tiap individu pada populasi akhir
+Genetik: [0, 2, 1, 1, 1, 1, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0], Fitness: 270
+Genetik: [0, 1, 2, 1, 3, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0], Fitness: 300
+Genetik: [1, 3, 1, 2, 2, 1, 0, 2, 2, 2, 1, 0, 0, 1, 1, 1, 2], Fitness: 260
+Genetik: [0, 1, 2, 1, 3, 1, 0, 2, 2, 2, 1, 0, 0, 1, 1, 1, 2], Fitness: 260
+Genetik: [1, 3, 1, 2, 2, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0], Fitness: 300
+Genetik: [0, 1, 0, 1, 3, 1, 0, 2, 2, 2, 1, 0, 2, 1, 1, 1, 2], Fitness: 260
+Genetik: [1, 3, 1, 2, 2, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0], Fitness: 300
+Genetik: [0, 2, 1, 1, 3, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0], Fitness: 300
+Genetik: [0, 1, 2, 1, 1, 1, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0], Fitness: 270
+Genetik: [0, 2, 1, 1, 3, 1, 1, 1, 1, 3, 3, 1, 1, 3, 2, 1, 0], Fitness: 300
+Genetik: [1, 1, 1, 1, 0, 0, 0, 2, 1, 1, 3, 3, 2, 0, 2, 0, 1], Fitness: 270
+Genetik: [1, 1, 2, 1, 1, 1, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0], Fitness: 280
+Genetik: [0, 1, 1, 1, 0, 0, 0, 2, 1, 1, 3, 3, 2, 0, 2, 0, 1], Fitness: 250
+Genetik: [1, 1, 2, 1, 1, 1, 0, 2, 1, 1, 3, 3, 3, 1, 2, 0, 1], Fitness: 300
+Genetik: [0, 1, 1, 1, 0, 0, 0, 2, 1, 1, 3, 3, 2, 0, 2, 0, 1], Fitness: 250
+Genetik: [0, 1, 1, 1, 0, 0, 0, 2, 1, 1, 3, 3, 3, 1, 2, 1, 0], Fitness: 250
+Genetik: [0, 2, 1, 1, 3, 1, 1, 1, 1, 1, 3, 1, 2, 0, 2, 0, 1], Fitness: 300
+Genetik: [1, 0, 1, 0, 0, 0, 0, 2, 1, 1, 3, 3, 3, 1, 2, 1, 0], Fitness: 250
+Genetik: [3, 1, 1, 1, 3, 1, 1, 1, 1, 2, 3, 1, 2, 0, 2, 0, 1], Fitness: 280
+Genetik: [0, 1, 2, 1, 3, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0], Fitness: 300
+Genetik: [1, 1, 2, 1, 1, 1, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0], Fitness: 280
+Genetik: [0, 1, 2, 1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 2, 1, 0], Fitness: 310
+Genetik: [1, 1, 2, 1, 3, 1, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0], Fitness: 270
+Genetik: [0, 1, 2, 1, 3, 1, 1, 1, 1, 1, 3, 3, 2, 1, 2, 0, 0], Fitness: 280
+Genetik: [0, 1, 2, 1, 1, 1, 0, 2, 1, 1, 3, 1, 3, 1, 2, 1, 0], Fitness: 300
+Genetik: [0, 1, 2, 1, 3, 1, 1, 1, 1, 3, 3, 1, 2, 1, 2, 0, 0], Fitness: 280
+Genetik: [0, 1, 2, 1, 1, 1, 2, 0, 2, 1, 1, 1, 3, 1, 1, 1, 0], Fitness: 290
+Genetik: [3, 1, 1, 1, 3, 1, 1, 1, 1, 2, 3, 1, 3, 1, 2, 1, 0], Fitness: 280
+Genetik: [0, 1, 2, 1, 1, 1, 0, 2, 1, 1, 3, 1, 2, 0, 2, 0, 1], Fitness: 280
+Genetik: [3, 1, 1, 1, 3, 1, 1, 1, 1, 2, 3, 1, 3, 1, 2, 1, 0], Fitness: 280
+Genetik: [0, 1, 2, 1, 1, 1, 0, 2, 0, 1, 3, 1, 2, 0, 2, 1, 1], Fitness: 270
+Genetik: [1, 0, 1, 0, 0, 0, 0, 2, 1, 1, 3, 3, 2, 0, 2, 0, 1], Fitness: 250
+Genetik: [0, 1, 1, 1, 0, 0, 0, 2, 1, 1, 3, 3, 3, 1, 2, 1, 0], Fitness: 250
+Genetik: [1, 0, 1, 0, 2, 0, 0, 2, 1, 1, 3, 3, 2, 0, 1, 0, 1], Fitness: 270
+Genetik: [0, 1, 1, 1, 0, 0, 0, 2, 1, 1, 3, 3, 3, 1, 2, 1, 0], Fitness: 250
+Genetik: [1, 0, 1, 0, 0, 0, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0], Fitness: 250
+Genetik: [0, 2, 1, 1, 1, 1, 0, 2, 1, 1, 3, 3, 3, 1, 2, 1, 0], Fitness: 280
+Genetik: [1, 0, 1, 0, 0, 0, 0, 2, 3, 1, 1, 3, 2, 1, 2, 0, 0], Fitness: 250
+Genetik: [0, 2, 1, 1, 1, 1, 0, 2, 1, 1, 3, 1, 3, 1, 2, 3, 0], Fitness: 280
+Genetik: [1, 3, 1, 2, 2, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0], Fitness: 300
+Genetik: [1, 0, 1, 0, 0, 0, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0], Fitness: 250
+Genetik: [1, 3, 1, 2, 2, 1, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 0], Fitness: 300
+Genetik: [1, 0, 1, 0, 0, 0, 0, 2, 1, 1, 3, 3, 2, 1, 2, 0, 0], Fitness: 250
+
+═══════════════════════ BEST GENETIC ═══════════════════════
+
+Fitness function tertinggi pada populasi akhir: 310
+Diraih oleh individu dengan genetik: [0, 1, 2, 1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 2, 1, 0]
+      PLACED                UNPLACED      
+┌──────┬─────────┐    ┌────────┬─────────┐
+│ Code │ Type    │    │ Jumlah │ Jenis   │
+├──────┼─────────┤    ├────────┼─────────┤
+│    1 │ mobil   │    │     9x │ mobil   │
+│    2 │ minibus │    │     6x │ minibus │
+│    3 │ mobil   │    │     4x │ truk    │
+│    4 │ truk    │    └────────┴─────────┘
+│    5 │ mobil   │                        
+│    6 │ mobil   │                        
+│    7 │ mobil   │                        
+│    8 │ mobil   │                        
+│    9 │ mobil   │                        
+│   10 │ mobil   │                        
+│   11 │ mobil   │                        
+│   12 │ mobil   │                        
+│   13 │ mobil   │                        
+└──────┴─────────┘                        
+Matriks kapal setelah penempatan kendaraan:
+┌────┬────┬────┬────┬────┬────┬────┐
+│  1 │  1 │  2 │  2 │  2 │  3 │  3 │
+├────┼────┼────┼────┼────┼────┼────┤
+│  4 │  4 │  4 │  5 │  5 │  6 │  6 │
+├────┼────┼────┼────┼────┼────┼────┤
+│  4 │  4 │  4 │  7 │  7 │  8 │  8 │
+├────┼────┼────┼────┼────┼────┼────┤
+│  9 │  9 │ 10 │ 10 │ 11 │ 11 │  0 │
+├────┼────┼────┼────┼────┼────┼────┤
+│ 12 │ 12 │ 13 │ 13 │  0 │  0 │  0 │
+└────┴────┴────┴────┴────┴────┴────┘
+
+══════════════════════ GRAFIK FITNESS ══════════════════════
+
+Grafik fitness terhadap iterasi   (* = maksimum, o = rata-rata)
+  310.0 │                                *     *     *     *     *     *   
+  307.1 │                                                                  
+  304.3 │                                                                  
+  301.4 │  *     *     *     *     *                                       
+  298.5 │                                                                  
+  295.7 │                                                                  
+  292.8 │                                                                  
+  289.9 │                                                                  
+  287.1 │                                                                  
+  284.2 │                                                                  
+  281.3 │              o                       o                           
+  278.4 │        o           o           o           o                     
+  275.6 │  o                       o                       o     o     o   
+        └──────────────────────────────────────────────────────────────────
+         0     1     2     3     4     5     6     7     8     9     10     (iterasi)
+
+Iterasi 0: maks = 300, rata-rata = 276.7
+Iterasi 1: maks = 300, rata-rata = 278.6
+Iterasi 2: maks = 300, rata-rata = 280.9
+Iterasi 3: maks = 300, rata-rata = 278.0
+Iterasi 4: maks = 300, rata-rata = 276.3
+Iterasi 5: maks = 310, rata-rata = 278.7
+Iterasi 6: maks = 310, rata-rata = 280.0
+Iterasi 7: maks = 310, rata-rata = 279.7
+Iterasi 8: maks = 310, rata-rata = 276.9
+Iterasi 9: maks = 310, rata-rata = 275.6
+Iterasi 10: maks = 310, rata-rata = 275.6
+
+═══════════════════ RINGKASAN EKSPERIMEN ═══════════════════
+
+Jumlah populasi awal  : 3
+Banyak iterasi        : 10
+Fitness akhir         : 310
+Durasi total          : 0.01 detik (termasuk delay tampilan)
+Durasi algoritma      : 0.0139 detik (tanpa delay tampilan)
