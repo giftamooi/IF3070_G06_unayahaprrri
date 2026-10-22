@@ -44,8 +44,6 @@ class Vehicle():
      
 
 
-
-
 def calculate_fee(vehicles):
     totalShippingFee = 0
     for v in vehicles:
@@ -74,13 +72,6 @@ def create_vehicles():
         vehicles.append(Vehicle("truk_" + str(i), "truk", 2, 3, 60, 30, 2))
 
     return vehicles
-
-
-def calculate_weight():
-    pass
-
-def calculate_value():
-    pass
 
 
 
@@ -194,6 +185,7 @@ def swap_vehicle(vehicles, index1, index2):
         tempColumn1 = v1.column
         tempOrientation1 = v1.orientation
 
+        # untuk kasus ini, saya buat agar orientasi juga ditukar untuk menurunkan kemungkinan overlap
         v1.row = v2.row
         v1.column = v2.column
         v1.orientation = v2.orientation
@@ -203,4 +195,38 @@ def swap_vehicle(vehicles, index1, index2):
         v2.orientation = tempOrientation1
 
     return copyVehicles
+
+def successor_maker(vehicles):
+    successors = []
+
+    for i in range(len(vehicles)):
+        if(vehicles[i].insideShip == False):
+            continue
+
+        # ubah orientasi
+        newOrien = change_orientation(vehicles, i)
+        if(is_valid(newOrien)):
+            successors.append(newOrien)
+
+        # pindah
+        for y in range(shipWidth):
+            for x in range(shipLength):
+                if(vehicles[i].row == y and vehicles[i].column == x):
+                    continue
+                else:
+                    newMove = move_vehicle(vehicles, i, y, x)
+                    if(is_valid(newMove)):
+                        successors.append(newMove)
+
+        # tukar
+        for v in range(len(vehicles)):
+            if(i == v):
+                continue
+            else:
+                newSwap = swap_vehicle(vehicles, i, v)
+                if(is_valid(newSwap)):
+                    successors.append(newSwap)
+
+
+    return successors
 
