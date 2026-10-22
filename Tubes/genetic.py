@@ -1,6 +1,6 @@
 # genetic.py
 from typing import List
-from time import sleep, time
+from time import sleep, time, perf_counter
 import random
 
 # Pendefinisian variabel awal untuk algoritma 
@@ -315,18 +315,19 @@ def main():
     startPopulationNumber = input_integer("Masukkan jumlah populasi awal: ", 2) # Minimum 2 populasi awal
     generationNumber = input_integer("Masukkan jumlah generasi: ", 1) # Minimum 1 generasi iterasi
 
-    sleep(1)
+    # sleep(1)
     divider("POPULASI AWAL")
     loading("Menghasilkan populasi awal sebanyak " + str(startPopulationNumber)+" genetik", 1)
     population = generate_population(startPopulationNumber)
+    startTime = perf_counter()
 
-    sleep(1)
+    # sleep(1)
     divider("KONDISI KAPAL AWAL")
     loading(f"Mengecek kondisi awal kapal", 1)
     print(f"Kondisi kapal ukuran {shipHeight} x {shipWidth} dengan kapasitas maksimal {shipMaxCapacity} ton:")
     print_matrix(shipMatrix)
 
-    sleep(1)
+    # sleep(1)
     divider("FITNESS FUNCTION POPULASI")
     loading("Menghitung fitness function untuk tiap individu pada populasi", 1)
     for gen in population:  
@@ -338,19 +339,19 @@ def main():
         # print_matrix(shipMatrix)
         reset_ship()
 
-    sleep(1)
+    # sleep(1)
     divider("ITERASI GENERASI")
     loading("Memulai iterasi untuk " + str(generationNumber) + " generasi", 1)
     for generation in range(generationNumber):
-        sleep(1)
+        # sleep(1)
         divider(f"GENERASI {generation + 1}")          
-        sleep(1)
+        # sleep(1)
         divider("PARENT")  
         loading(f"Memilih dua individu sesuai chance untuk menjadi parent")      
         successors = calculate_successor(population)
         print(f"PARENT1:{successors[0]['genome']}\nPARENT2:{successors[1]['genome']}")
 
-        sleep(1)
+        # sleep(1)
         divider("CROSSOVER")  
         loading("Menjalankan fungsi crossover pada parent", 1)
         children = crossover(successors[0], successors[1])
@@ -363,7 +364,7 @@ def main():
         loading("Menambahkan children ke dalam populasi", 1)
         print(f"Berhasil menambahkan children ke dalam populasi, total populasi: {len(population)}") 
 
-        sleep(1)
+        # sleep(1)
         divider("MUTATION")  
         loading(f"Menjalankan fungsi mutate pada children")
         mutatedChildren = [mutate(child, 0.1) for child in children]
@@ -376,7 +377,7 @@ def main():
         loading("Menambahkan mutated children ke dalam populasi", 1)
         print(f"Berhasil menambahkan mutated ke dalam populasi, total populasi: {len(population)}") 
 
-    sleep(1)
+    # sleep(1)
     divider("ITERASI SELESAI")
     print(f"Iterasi untuk {generationNumber} generasi selesai, populasi akhir: {len(population)}")
     loading("Menghitung fitness function untuk tiap individu pada populasi akhir", 1)
@@ -386,12 +387,14 @@ def main():
         sleep(0.2)
         reset_ship()
 
-    sleep(1)
+    # sleep(1)
     divider("BEST GENETIC")
     best = max(population, key=lambda gen: gen["fitness"])
+    elapsedTime = perf_counter() - startTime
     print(f"Fitness function tertinggi pada populasi akhir: {best['fitness']}")
     print(f"Diraih oleh individu dengan genetik: {best['genome']}")
-    
+    print(f"Waktu yang dibutuhkan sejak populasi awal selesai dibuat: {elapsedTime:.2f} detik")
+
     calculate_fitness(best)
     print_vehicle_tables(best["vehicles_placed"], best["vehicles_unplaced"])
     print(f"Matriks kapal setelah penempatan kendaraan:")
