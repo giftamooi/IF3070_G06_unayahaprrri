@@ -8,14 +8,17 @@ import random
 # shipWidth = banyak baris (i), shipHeight = banyak kolom (j)
 shipWidth = 5
 shipHeight = 7
-shipMaxCapacity = 100
+# shipMaxWeight = batas total berat kendaraan di kapal (ton)
+# shipMaxCapacity = batas jumlah kendaraan di kapal (unit)
+shipMaxWeight = 100
+shipMaxCapacity = 500
 
 # Vehicles adalah pendefinisian tipe kendaraan yang ada (format sama dengan genetic.py)
 # dimensions = (baris, kolom) untuk orientasi horizontal, vertikal = ditukar
 vehicles = {
     1: {"id": "mobil", "dimensions": (1, 2),"orientation": "horizontal", "shippingFee": 20, "weight": 5, "eta": 2},
     2: {"id": "minibus", "dimensions": (1, 3),"orientation": "horizontal", "shippingFee": 30, "weight": 12, "eta": 2},
-    3: {"id": "truk", "dimensions": (2, 3),"orientation": "horizontal","shippingFee": 70, "weight": 30, "eta": 2}
+    3: {"id": "truk", "dimensions": (2, 3),"orientation": "horizontal","shippingFee": 60, "weight": 30, "eta": 2}
 }
 
 # Pendefinisian stock kendaraan (total 32 kendaraan)
@@ -25,6 +28,10 @@ vehicleStock = {1: 20, 2: 7, 3: 5}
 # Tiap kendaraan menyimpan "position" = koordinat pojok kiri atas (baris, kolom) di geladak,
 # atau None jika kendaraan berada di luar kapal
 shipState = List[dict]
+
+# runNumber = berapa kali SA dijalankan ulang dari awal (tiap run memakai initial state acak baru)
+# Spesifikasi meminta 3 run, ubah angka ini untuk menjalankan lebih banyak, misal runNumber = 10
+runNumber = 3
 
 
 # Fungsi generate_fleet
@@ -59,15 +66,18 @@ def get_occupied_cells(vehicle: dict) -> list:
     return [(positionX + i, positionY + j) for i in range(vehicleWidth) for j in range(vehicleHeight)]
 
 # Fungsi is_valid_state
-# Digunakan untuk memeriksa 3 constraint: tidak overlap, di dalam batas geladak, total berat <= kapasitas
+# Digunakan untuk memeriksa constraint: tidak overlap, di dalam batas geladak,
+# total berat <= shipMaxWeight, dan jumlah kendaraan <= shipMaxCapacity
 def is_valid_state(currentState: shipState) -> bool:
     occupiedCells = set()
     totalWeight = 0
+    totalVehicle = 0
     for vehicle in currentState:
         if vehicle["position"] is None:
             continue
         totalWeight += vehicle["weight"]
-        if totalWeight > shipMaxCapacity:
+        totalVehicle += 1
+        if totalWeight > shipMaxWeight or totalVehicle > shipMaxCapacity:
             return False
         for (i, j) in get_occupied_cells(vehicle):
             if i < 0 or i >= shipWidth or j < 0 or j >= shipHeight:
@@ -298,7 +308,8 @@ def print_state(currentState: shipState) -> None:
     print_vehicle_tables(placed, unplaced)
     print(f"Matriks kapal (angka = Code kendaraan):")
     print_matrix(build_ship_matrix(currentState))
-    print(f"Value: {calculate_value(currentState)} juta, total berat: {calculate_weight(currentState)}/{shipMaxCapacity} ton")
+    print(f"Value: {calculate_value(currentState)} juta, total berat: {calculate_weight(currentState)}/{shipMaxWeight} ton, "
+          f"jumlah kendaraan: {len(placed)}/{shipMaxCapacity}")
 
 # Fungsi print_ascii_plot (visualisasi)
 # Digunakan untuk menggambar plot titik (iterasi, nilai) di CLI
@@ -345,7 +356,7 @@ def loading(message: str, seconds: float = 1.5) -> None:
     print(f"\r{message}...")
 
 # Fungsi main
-# Menjalankan SA sebanyak 3 kali dengan parameter yang sama dan menampilkan hasil tiap run di CLI
+# Menjalankan SA sebanyak runNumber kali dengan parameter yang sama dan menampilkan hasil tiap run di CLI
 def main():
     divider("SIMULATED ANNEALING")
     initialTemperature = input_parameter("Masukkan suhu awal", 100.0, float)
@@ -355,7 +366,7 @@ def main():
     stuckThreshold = input_parameter("Masukkan batas iterasi tanpa perbaikan (stuck)", 200, int)
 
     results = []
-    for run in range(1, 4):
+    for run in range(1, runNumber + 1):
         sleep(1)
         divider(f"RUN {run}")
         loading(f"Menjalankan simulated annealing run ke-{run}", 1)
@@ -386,7 +397,7 @@ def main():
         print(f"Frekuensi stuck       : {result['stuckCount']} kali (tanpa perbaikan {stuckThreshold} iterasi)")
 
     sleep(1)
-    divider("RINGKASAN 3 RUN")
+    divider(f"RINGKASAN {runNumber} RUN")
     print(f"{'Run':<5}{'Value awal':<13}{'Value akhir':<13}{'Iterasi':<10}{'Durasi (s)':<13}{'Stuck':<6}")
     for run, result in enumerate(results, start=1):
         print(f"{run:<5}{result['initialValue']:<13}{result['finalValue']:<13}{result['iteration']:<10}{result['duration']:<13.4f}{result['stuckCount']:<6}")
