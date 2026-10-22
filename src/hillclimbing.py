@@ -326,6 +326,39 @@ def print_vehicle_tables(placed: list, unplaced: list) -> None:
     for a, b in zip(left, right):
         print(a + "    " + b)
 
+def build_ship_matrix(vehicles):
+    matrix = {(i, j): 0 for i in range(shipWidth) for j in range(shipLength)}      
+    number = 1         
+
+    for v in vehicles:
+        if v.insideShip == False:
+            continue
+        cells = v.get_cells()        
+        for c in cells:
+            matrix[c] = number
+        number += 1
+
+    return matrix
+
+def build_vehicle_lists(vehicles):
+    placed = []
+    counter = {"mobil" : 0, "minibus" : 0, "truk" : 0}
+    number = 1
+
+    for v in vehicles:
+        if v.insideShip:
+            placed.append((number, v.vhcType))
+            number += 1
+        else:
+            counter[v.vhcType] += 1
+
+    unplaced = []
+    for jenis in counter:
+        if counter[jenis] > 0:
+            unplaced.append((f"{counter[jenis]}x", jenis))
+
+    return placed, unplaced
+
 
 def main():
     numberRuns= 3
@@ -352,6 +385,18 @@ def main():
         print("=" * 40)
         print("RUN " + str(i+1))
         print("=" * 40)
+        divider("STATE AWAL")
+        matrix = build_ship_matrix(r["initialState"])
+        placed, unplaced = build_vehicle_lists(r["initialState"])
+        print_matrix(matrix)
+        print_vehicle_tables(placed, unplaced)
+
+        divider("STATE AKHIR")
+        matrix = build_ship_matrix(r["endState"])
+        placed, unplaced = build_vehicle_lists(r["endState"])
+        print_matrix(matrix)
+        print_vehicle_tables(placed, unplaced)
+        
         print(f"Fee awal : {r['startFee']}")
         print(f"Fee akhir : {r['endFee']}")
         print(f"Banyak iterasi : {r['iterations']}")
