@@ -7,7 +7,7 @@ import random
 # shipWidth = banyak baris (i), shipHeight = banyak kolom (j)
 shipWidth = 5
 shipHeight = 7
-# shipMaxCapacity = batas total berat kendaraan di kapal (ton), sama dengan genetic_algorithm.py dan hill_climbing.py
+# shipMaxCapacity = batas total berat kendaraan di kapal (ton)
 shipMaxCapacity = 100
 
 # Vehicles adalah pendefinisian tipe kendaraan yang ada (format sama dengan genetic_algorithm.py)
@@ -62,7 +62,7 @@ def get_cells(vehicle: dict) -> list:
 
 # Fungsi is_valid
 # Digunakan untuk memeriksa constraint: tidak overlap, di dalam batas geladak,
-# dan total berat <= shipMaxCapacity
+# total berat <= shipMaxCapacity
 def is_valid(currentState: shipState) -> bool:
     occupiedCells = set()
     totalWeight = 0
