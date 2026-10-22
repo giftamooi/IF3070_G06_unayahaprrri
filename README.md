@@ -1,5 +1,5 @@
 # IF3070_G06_unayahaprrri
-![Usagi](docs/usagi.jpg)
+![Usagi](docs/Usagi.jpg)
 
 
 Tugas Besar 1 IF3070 Dasar Inteligensi Artifisial 2026/2027: penyelesaian persoalan pemuatan kendaraan ke kapal kargo dengan local search.
