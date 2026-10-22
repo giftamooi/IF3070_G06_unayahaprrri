@@ -360,6 +360,31 @@ def build_vehicle_lists(vehicles):
     return placed, unplaced
 
 
+# diambil dari plot_fitness_cli genetic.py azza
+def plot_history(history, height: int = 12) -> None:
+    low = min(history)
+    high = max(history)
+    if high == low:
+        high = low + 1
+    columnGap = 6 if len(history) <= 12 else 4
+    width = len(history) * columnGap
+
+    
+    grid = [[" "] * width for _ in range(height + 1)]
+    for idx in range(len(history)):
+        x = idx * columnGap + 2
+        y = round((history[idx] - low) / (high - low) * height)
+        grid[height - y][x] = "*"
+    print("Grafik value terhadap iterasi   (* = value)")
+    for row in range(height + 1):
+        value = high - (high - low) * row / height
+        print(f"{value:7.1f} │" + "".join(grid[row]))
+    print("        └" + "─" * width)
+    labels = "".join(str(i).ljust(columnGap) for i in range(len(history)))
+    print("         " + labels + " (iterasi)")
+
+
+
 def main():
     numberRuns= 3
     results = []
@@ -401,6 +426,7 @@ def main():
         print(f"Value akhir : {r['endValue']}")
         print(f"Banyak iterasi : {r['iterations']}")
         print(f"Durasi : {r['duration']:.2f} detik")
+        plot_history(r["history"])
 
 
 
