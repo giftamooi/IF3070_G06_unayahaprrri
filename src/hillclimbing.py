@@ -1,11 +1,10 @@
-import time
+from time import sleep, perf_counter, time
 import random
 import copy
 
 # data geladak kapal
 shipWidth = 5
 shipLength = 7
-shipMatrix = {(i, j): 0 for i in range(shipWidth) for j in range(shipLength)} 
 shipMaxCapacity = 100
 
 # cetakan untuk kendaraan
@@ -118,7 +117,7 @@ def is_valid(vehicles):
 
             for c in cells:
                 # cek apakah sel tersebut di dalam atau luar geladak
-                if(c[0] < 0 or c[0] > 4 or c[1] < 0 or c[1] > 6):
+                if(c[0] < 0 or c[0] > shipWidth-1 or c[1] < 0 or c[1] > shipLength - 1):
                     return False
 
                 # cek apakah sel tersebut udah pernah dipake
@@ -235,7 +234,7 @@ def successor_maker(vehicles):
 
 
 def steepest_ascent(vehicles):
-    startTime = time.time()
+    startTime = time()
     current = vehicles
     currentValue = calculate_value(vehicles)
     iterations = 0
@@ -262,10 +261,10 @@ def steepest_ascent(vehicles):
             iterations += 1   # penghitungan iterasi tidak termasuk iterasi terakhir yang gagal
             history.append(currentValue)
 
-    duration = time.time() - startTime
+    duration = time() - startTime
     return current, iterations, duration, history
 
-
+# diambil dari genetic.py azza
 def print_matrix(matrix: dict) -> None:
     cellWidth = max(2, len(str(max(matrix.values()))))
     segment = "─" * (cellWidth + 2)
@@ -278,9 +277,8 @@ def print_matrix(matrix: dict) -> None:
             print("├" + "┼".join([segment] * shipLength) + "┤")
     print("└" + "┴".join([segment] * shipLength) + "┘")
 
-# Fungsi divider (visualisasi)
-# Digunakan untuk membantu memisahkan output
-# dan menjadi judul besar yang jelas
+
+# diambil dari genetic.py azza
 def divider(title: str = "", width: int = 60, char: str = "═") -> None:
     if title == "":
         print(char * width)
@@ -292,8 +290,30 @@ def divider(title: str = "", width: int = 60, char: str = "═") -> None:
     print(char * left + label + char * right)
     print()
 
-# Fungsi build_table (visualisasi)
-# Digunakan untuk membuat tabel
+# diambil dari genetic.py azza
+delayTime = 0.0
+
+def pause(seconds: float) -> None:
+    global delayTime
+    startPause = perf_counter()
+    sleep(seconds)
+    delayTime += perf_counter() - startPause
+
+def loading(message: str, seconds: float = 1.5) -> None:
+    global delayTime
+    startLoading = perf_counter()
+    frames = ["   ", ".  ", ".. ", "..."]
+    endTime = time() + seconds
+    i = 0
+    while time() < endTime:
+        print(f"\r{message}{frames[i % 4]}", end="", flush=True)
+        sleep(0.3)
+        i += 1
+    print(f"\r{message}...")   
+    delayTime += perf_counter() - startLoading
+
+
+# diambil dari genetic.py azza
 def build_table(title: str, headers: tuple, rows: list) -> list:
     codeW = max([len(headers[0])] + [len(str(c)) for c, _ in rows])
     typeW = max([len(headers[1])] + [len(t) for _, t in rows])
@@ -312,9 +332,7 @@ def build_table(title: str, headers: tuple, rows: list) -> list:
     lines.append(border("└", "┴", "┘"))
     return lines
 
-# Fungsi print_vehicle_tables
-# Digunakan untuk memprint dua table di akhir
-# Tabel yang menunjukkan kendaraan placed dan unplaced
+# diambil dari genetic.py azza
 def print_vehicle_tables(placed: list, unplaced: list) -> None:
     left = build_table("PLACED", ("Code", "Type"), placed)
     right = build_table("UNPLACED", ("Jumlah", "Jenis"), unplaced)
@@ -390,10 +408,38 @@ def main():
     results = []
 
     for run in range(numberRuns):
+        divider(f"RUN {run + 1}")
+
+        loading("Membuat state awal", 2)
         vehicles = create_vehicles()  # buat kendaraan
         vehicles = create_initial_state(vehicles)  # beberapa masu ke geladak sebagai initial state
         initialState = copy.deepcopy(vehicles)
+
+        divider("STATE AWAL")
+        matrix = build_ship_matrix(initialState)
+        placed, unplaced = build_vehicle_lists(initialState)
+
+        loading("Membuat matriks", 2)
+        print_matrix(matrix)
+
+        loading("Membuat daftar kendaraan yang masuk geladak dan yang di luar", 2)
+        print_vehicle_tables(placed, unplaced)
+
+        loading("Menjalankan steepest ascent", 2)
         endState, iterations, duration, history = steepest_ascent(vehicles)
+
+        divider("STATE AKHIR")
+        matrix = build_ship_matrix(endState)
+        placed, unplaced = build_vehicle_lists(endState)
+        print_matrix(matrix)
+        print_vehicle_tables(placed, unplaced)
+
+        loading("Ringkasan run ke-" + str(run+1), 2)
+        print(f"Value awal : {history[0]}")
+        print(f"Value akhir : {history[-1]}")
+        print(f"Banyak iterasi : {iterations}")
+        print(f"Durasi : {duration:.2f} detik")
+        plot_history(history)
 
         results.append({
             "initialState" : initialState,
@@ -405,28 +451,12 @@ def main():
             "history" : history,
         })
 
-    for i in range(numberRuns):
+    divider("RINGKASAN EKSPERIMEN")
+    print(f"{'Run':<6}{'Value awal':>12}{'Value akhir':>13}{'Iterasi':>9}{'Durasi (s)':>12}")
+    for i in range(len(results)):
         r = results[i]
-        print("=" * 40)
-        print("RUN " + str(i+1))
-        print("=" * 40)
-        divider("STATE AWAL")
-        matrix = build_ship_matrix(r["initialState"])
-        placed, unplaced = build_vehicle_lists(r["initialState"])
-        print_matrix(matrix)
-        print_vehicle_tables(placed, unplaced)
+        print(f"{i + 1:<6}{r['startValue']:>12}{r['endValue']:>13}{r['iterations']:>9}{r['duration']:>12.2f}")
 
-        divider("STATE AKHIR")
-        matrix = build_ship_matrix(r["endState"])
-        placed, unplaced = build_vehicle_lists(r["endState"])
-        print_matrix(matrix)
-        print_vehicle_tables(placed, unplaced)
-        
-        print(f"Value awal : {r['startValue']}")
-        print(f"Value akhir : {r['endValue']}")
-        print(f"Banyak iterasi : {r['iterations']}")
-        print(f"Durasi : {r['duration']:.2f} detik")
-        plot_history(r["history"])
 
 
 
