@@ -1,5 +1,6 @@
 import time
 import random
+import copy
 
 # data geladak kapal
 shipWidth = 5
@@ -57,12 +58,6 @@ def calculate_fee(vehicles):
     return totalShippingFee
 
 
-def calculate_weight():
-    pass
-
-def calculate_value():
-    pass
-
 def create_vehicles(): 
     vehicles = []
 
@@ -80,6 +75,15 @@ def create_vehicles():
 
     return vehicles
 
+
+def calculate_weight():
+    pass
+
+def calculate_value():
+    pass
+
+
+
 def create_initial_state(vehicles):
     failCount = 0
     maxFail = 50     # maxFail berfungsi untuk memberhentikan looping saat geladak sudah dianggap penuh
@@ -95,8 +99,8 @@ def create_initial_state(vehicles):
 
         choosenVehicle = random.choice(vhcOutsideShip)
         choosenVehicle.insideShip = True
-        choosenVehicle.row = random.randint(0, 4)
-        choosenVehicle.column = random.randint(0, 6)
+        choosenVehicle.row = random.randint(0, shipWidth - 1)
+        choosenVehicle.column = random.randint(0, shipLength - 1)
         choosenVehicle.orientation = random.choice(["H", "V"])
         if(is_valid(vehicles)):
             failCount = 0
@@ -142,4 +146,61 @@ def is_valid(vehicles):
 
     return True
 
+def change_orientation(vehicles, index):
+    copyVehicles = copy.deepcopy(vehicles)
+
+    v = copyVehicles[index]
+    if(v.orientation == "H"):
+        v.orientation = "V"
+    elif(v.orientation == "V"):
+        v.orientation = "H"
+
+    return copyVehicles
+
+
+def move_vehicle(vehicles, index, newRow, newColumn):
+    copyVehicles = copy.deepcopy(vehicles)
+
+    v = copyVehicles[index]
+    
+    v.row = newRow
+    v.column = newColumn
+
+    return copyVehicles
+
+
+def swap_vehicle(vehicles, index1, index2):
+    copyVehicles = copy.deepcopy(vehicles)
+    tempRow1 = None
+    tempColumn1 = None
+    tempOrientation1 = None
+    
+    v1 = copyVehicles[index1]
+    v2 = copyVehicles[index2]
+    if(v1.insideShip == True and v2.insideShip == False):   #jika ditukar dengan kendaraan di luar geladak
+        v2.row = v1.row
+        v2.column = v1.column
+        v2.orientation = v1.orientation
+        v2.insideShip = True
+
+        # membuat v1 menjadi default (karena dikeluarkan)
+        v1.row = None
+        v1.column = None
+        v1.orientation = "H"
+        v1.insideShip = False
+
+    elif(v1.insideShip == True and v2.insideShip == True):   #jika ditukar dengan kendaraan lain di dalam geladak
+        tempRow1 = v1.row
+        tempColumn1 = v1.column
+        tempOrientation1 = v1.orientation
+
+        v1.row = v2.row
+        v1.column = v2.column
+        v1.orientation = v2.orientation
+
+        v2.row = tempRow1
+        v2.column = tempColumn1
+        v2.orientation = tempOrientation1
+
+    return copyVehicles
 
