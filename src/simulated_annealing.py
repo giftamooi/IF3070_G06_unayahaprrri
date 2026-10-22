@@ -7,10 +7,8 @@ import random
 # shipWidth = banyak baris (i), shipHeight = banyak kolom (j)
 shipWidth = 5
 shipHeight = 7
-# shipMaxWeight = batas total berat kendaraan di kapal (ton)
-# shipMaxCapacity = batas jumlah kendaraan di kapal (unit)
-shipMaxWeight = 100
-shipMaxCapacity = 500
+# shipMaxCapacity = batas total berat kendaraan di kapal (ton), sama dengan genetic_algorithm.py dan hill_climbing.py
+shipMaxCapacity = 100
 
 # Vehicles adalah pendefinisian tipe kendaraan yang ada (format sama dengan genetic_algorithm.py)
 # dimensions = (baris, kolom) untuk orientasi horizontal, vertikal = ditukar
@@ -30,7 +28,7 @@ shipState = List[dict]
 
 # numberRuns = berapa kali SA dijalankan ulang dari awal (tiap run memakai initial state acak baru)
 # Spesifikasi meminta 3 run,tp bisa diubah sekarang untuk test =10,nantiganti.
-numberRuns = 10
+numberRuns = 3
 
 
 # Fungsi create_vehicles
@@ -64,17 +62,15 @@ def get_cells(vehicle: dict) -> list:
 
 # Fungsi is_valid
 # Digunakan untuk memeriksa constraint: tidak overlap, di dalam batas geladak,
-# total berat <= shipMaxWeight, dan jumlah kendaraan <= shipMaxCapacity
+# dan total berat <= shipMaxCapacity
 def is_valid(currentState: shipState) -> bool:
     occupiedCells = set()
     totalWeight = 0
-    totalVehicle = 0
     for vehicle in currentState:
         if vehicle["position"] is None:
             continue
         totalWeight += vehicle["weight"]
-        totalVehicle += 1
-        if totalWeight > shipMaxWeight or totalVehicle > shipMaxCapacity:
+        if totalWeight > shipMaxCapacity:
             return False
         for (i, j) in get_cells(vehicle):
             if i < 0 or i >= shipWidth or j < 0 or j >= shipHeight:
@@ -306,8 +302,7 @@ def print_state(currentState: shipState) -> None:
     placed, unplaced = build_vehicle_lists(currentState)
     print_matrix(build_ship_matrix(currentState))
     print_vehicle_tables(placed, unplaced)
-    print(f"Value : {calculate_value(currentState)}, total berat : {calculate_weight(currentState)}/{shipMaxWeight} ton, "
-          f"jumlah kendaraan : {len(placed)}/{shipMaxCapacity}")
+    print(f"Value : {calculate_value(currentState)}, total berat : {calculate_weight(currentState)}/{shipMaxCapacity} ton")
 
 # Fungsi plot_history_cli (visualisasi, format sama dengan plot_history dan plot_fitness_cli)
 # Digunakan untuk menggambar grafik titik (iterasi, nilai) langsung di CLI
