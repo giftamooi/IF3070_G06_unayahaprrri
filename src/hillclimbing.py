@@ -200,6 +200,7 @@ def successor_maker(vehicles):
     successors = []
 
     for i in range(len(vehicles)):
+        # kondisional buat memastikan yang diubah hanya kendaraan yang di dalam geladak saja
         if(vehicles[i].insideShip == False):
             continue
 
@@ -209,8 +210,9 @@ def successor_maker(vehicles):
             successors.append(newOrien)
 
         # pindah
-        for y in range(shipWidth):
-            for x in range(shipLength):
+        for y in range(shipWidth):    # cek tiap baris
+            for x in range(shipLength):    # cek tiap kolom
+                # kalo koordinat tujuan sama dengan koordinat sekarang, skip
                 if(vehicles[i].row == y and vehicles[i].column == x):
                     continue
                 else:
@@ -220,6 +222,7 @@ def successor_maker(vehicles):
 
         # tukar
         for v in range(len(vehicles)):
+            # kalo kendaraan awal sama kendaraan yg mau dituker itu sama, skip aja
             if(i == v):
                 continue
             else:
@@ -229,4 +232,5 @@ def successor_maker(vehicles):
 
 
     return successors
+
 
